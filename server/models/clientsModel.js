@@ -1,15 +1,16 @@
-const pool = require('../db');
+const pool = require('../db.js');  // ✅ Correct
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const registerClient = async (name, email, password) => {
+const registerClient = async (name, email, password, isAdmin = false) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-        'INSERT INTO clients (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
-        [name, email, hashedPassword]
+        'INSERT INTO clients (name, email, password, is_admin) VALUES ($1, $2, $3, $4) RETURNING id, name, email, is_admin',
+        [name, email, hashedPassword, isAdmin]
     );
     return result.rows[0];
 };
+
 
 const loginClient = async (email, password) => {
     const result = await pool.query('SELECT * FROM clients WHERE email = $1', [email]);
@@ -19,8 +20,14 @@ const loginClient = async (email, password) => {
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) return null;
 
-    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(
+        { id: user.id, email: user.email, isAdmin: user.is_admin },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+
     return { token, user };
 };
+
 
 module.exports = { registerClient, loginClient };

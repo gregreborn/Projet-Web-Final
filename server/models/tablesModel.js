@@ -1,4 +1,4 @@
-const pool = require('../db'); // Import DB connection
+const pool = require('../db.js');  // ✅ Correct
 
 const getAllTables = async () => {
     try {

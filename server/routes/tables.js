@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const tablesController = require('../controllers/tablesController');
+const { authenticate, isAdmin } = require('../middleware/auth');
 
-// Routes
-router.get('/', tablesController.getTables);
-router.post('/', tablesController.createTable);
-router.put('/:id', tablesController.updateTable);
-router.delete('/:id', tablesController.deleteTable);
+router.get('/', authenticate, tablesController.getTables);
+router.post('/', authenticate, isAdmin, tablesController.createTable);
+router.put('/:id', authenticate, isAdmin, tablesController.updateTable);
+router.delete('/:id', authenticate, isAdmin, tablesController.deleteTable);
 
-module.exports = router; // ✅ Ensure this line exists
+module.exports = router;
