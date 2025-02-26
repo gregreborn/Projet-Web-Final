@@ -7,7 +7,11 @@ const pool = require('./db'); // Import DB connection
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:4200', // ✅ Allow requests from frontend
+    allowedHeaders: ['Authorization', 'Content-Type'], // ✅ Ensure Authorization is allowed
+    credentials: true // ✅ Allow cookies and authentication headers
+}));
 app.use(bodyParser.json());
 
 // Routes
