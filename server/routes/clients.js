@@ -9,9 +9,14 @@ router.post('/register', async (req, res) => {
         const user = await Clients.registerClient(name, email, password);
         res.status(201).json(user);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if (error.code === '23505') { // PostgreSQL unique constraint violation
+            return res.status(400).json({ error: 'Email is already in use. Please use another one.' });
+        }
+        console.error('Registration error:', error);
+        res.status(500).json({ error: 'Internal server error. Please try again later.' });
     }
 });
+
 
 // Login a client
 router.post('/login', async (req, res) => {

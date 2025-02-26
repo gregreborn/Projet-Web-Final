@@ -1,0 +1,12 @@
+<form (ngSubmit)="login()"> <!-- ✅ Fix submit issue -->
+  <label>Email</label>
+  <input type="email" [(ngModel)]="email" name="email" required /> <!-- ✅ Add name -->
+
+  <label>Password</label>
+  <input type="password" [(ngModel)]="password" name="password" required /> <!-- ✅ Add name -->
+
+  <button type="submit">Login</button>
+</form>
+
+<p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+<p>Don't have an account? <a routerLink="/register">Register</a></p> <!-- ✅ Fix navigation -->
