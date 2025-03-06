@@ -1,1 +1,12 @@
+<nav>
+  <a routerLink="/home">Accueil</a>
+  <a routerLink="/reservations">Réservations</a>
+  <a routerLink="/dashboard" *ngIf="isLoggedIn && !isAdmin">Client Dashboard</a>
+  <a routerLink="/admin/dashboard" *ngIf="isAdmin">Admin Dashboard</a>
+  <a routerLink="/profile" *ngIf="isLoggedIn">Profil</a>
+  <a routerLink="/login" *ngIf="!isLoggedIn">Se connecter</a>
+  <a (click)="logout()" *ngIf="isLoggedIn">Déconnexion</a>
+</nav>
+
+
 <router-outlet></router-outlet>

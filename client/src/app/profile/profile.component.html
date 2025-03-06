@@ -1,0 +1,35 @@
+<h3>Modifier votre profil</h3>
+
+<!-- Show error messages -->
+<div *ngIf="errorMessage" class="alert alert-danger">
+  ❌ {{ errorMessage }}
+</div>
+
+<div *ngIf="client">
+  <label>Nom :</label>
+  <input type="text" [(ngModel)]="updatedName" class="form-control">
+
+  <label>Email :</label>
+  <input type="email" [(ngModel)]="updatedEmail" class="form-control">
+
+  <button (click)="updateProfile()" class="btn btn-primary">Mettre à jour</button>
+</div>
+
+<hr>
+
+<h3>Modifier votre mot de passe</h3>
+
+<div *ngIf="usingAutoPassword" class="alert alert-warning">
+  ⚠️ Votre mot de passe est temporaire. Changez-le maintenant !
+</div>
+
+<label>Ancien mot de passe :</label>
+<input type="password" [(ngModel)]="oldPassword" class="form-control">
+
+<label>Nouveau mot de passe :</label>
+<input type="password" [(ngModel)]="newPassword" class="form-control">
+
+<label>Confirmer le nouveau mot de passe :</label>
+<input type="password" [(ngModel)]="confirmPassword" class="form-control">
+
+<button (click)="changePassword()" class="btn btn-success">Changer</button>

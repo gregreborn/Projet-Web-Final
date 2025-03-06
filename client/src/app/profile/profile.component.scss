@@ -1,0 +1,18 @@
+
+.profile {
+  max-width: 400px;
+  margin: 0 auto;
+  label {
+    display: block;
+    margin-top: 1rem;
+  }
+  input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .error {
+    color: red;
+    margin-bottom: 1rem;
+  }
+}

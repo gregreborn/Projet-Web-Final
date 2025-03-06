@@ -1,0 +1,28 @@
+<div class="admin-clients">
+  <h2>Gestion des clients</h2>
+  <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+  <table>
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nom</th>
+      <th>Email</th>
+      <th>Admin</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let client of clients">
+      <td>{{ client.id }}</td>
+      <td>{{ client.name }}</td>
+      <td>{{ client.email }}</td>
+      <td>{{ client.is_admin }}</td>
+      <td>
+        <!-- Ici, vous pourrez ajouter une option pour modifier -->
+        <button (click)="deleteClient(client.id)">Supprimer</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <button (click)="exitAdminClients()" class="btn btn-secondary">Retour au tableau de bord</button>
+</div>

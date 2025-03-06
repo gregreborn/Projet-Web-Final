@@ -1,9 +1,19 @@
 import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withHashLocation } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http'; // ✅ Ensure HTTP client is provided
 
-import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes), provideClientHydration(withEventReplay())]
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter([
+      { path: '', redirectTo: '/home', pathMatch: 'full' },
+      ...routes,
+      { path: '**', redirectTo: '/home' }
+    ], withHashLocation()),
+    provideClientHydration(withEventReplay()),
+    provideHttpClient(), // ✅ Ensure HttpClient is provided
+  ]
 };

@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const authenticate = (req, res, next) => {
     let token = req.header('Authorization');
 
-    console.log('Incoming Token Header:', token); // ✅ Log raw header
+    console.log('🔹 Incoming Token Header:', token); // ✅ Debug Log (Raw Header)
 
     if (!token) return res.status(403).json({ error: 'Access denied' });
 
@@ -13,13 +13,14 @@ const authenticate = (req, res, next) => {
 
     try {
         req.user = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('Decoded User:', req.user); // ✅ Log decoded token
+        console.log('✅ Decoded User:', req.user); // ✅ Debug Log (Decoded Token)
         next();
     } catch (error) {
-        console.error('JWT Verification Error:', error); // ✅ Log errors
+        console.error('❌ JWT Verification Error:', error); // ✅ Debug Error
         res.status(403).json({ error: 'Invalid token' });
     }
 };
+
 
 // Middleware for Admin-Only routes
 const isAdmin = (req, res, next) => {

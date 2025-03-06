@@ -1,4 +1,90 @@
-<mwl-calendar-month-view
-  [viewDate]="viewDate"
-  [events]="events">
-</mwl-calendar-month-view>
+<div class="container">
+
+
+  <!-- View Toggle Buttons -->
+  <div class="calendar-controls">
+    <button (click)="setView('month')" class="btn btn-primary">Mois</button>
+    <button (click)="setView('week')" class="btn btn-secondary">Semaine</button>
+    <button (click)="setView('day')" class="btn btn-success">Jour</button>
+  </div>
+
+  <!-- Calendrier Angular -->
+  <mwl-calendar-month-view *ngIf="view === 'month'"
+                           [viewDate]="viewDate"
+                           [events]="events"
+                           (eventClicked)="onEventClick($event.event)"
+                           (dayClicked)="onDayClick($event.day)">
+  </mwl-calendar-month-view>
+
+  <mwl-calendar-week-view *ngIf="view === 'week'"
+                          [viewDate]="viewDate"
+                          [events]="events"
+                          (eventClicked)="onEventClick($event.event)">
+  </mwl-calendar-week-view>
+
+  <mwl-calendar-day-view *ngIf="view === 'day'"
+                         [viewDate]="viewDate"
+                         [events]="events"
+                         (eventClicked)="onEventClick($event.event)">
+  </mwl-calendar-day-view>
+</div>
+
+
+<!-- Formulaire de modification -->
+<div *ngIf="selectedReservation" class="modal">
+  <h3>Modifier la Réservation</h3>
+
+  <label>Table :</label>
+  <input type="number" [(ngModel)]="updatedTable" min="1" class="form-control">
+
+  <label>Horaire :</label>
+  <select [(ngModel)]="selectedTimeSlot" class="form-control">
+    <option value="" disabled selected>Choisissez un créneau</option>
+    <option *ngFor="let slot of availableTimeSlots" [value]="slot.value"
+            [disabled]="occupiedTimeSlots.includes(slot.value)">
+      {{ slot.label }} <span *ngIf="occupiedTimeSlots.includes(slot.value)"> (Indisponible)</span>
+    </option>
+  </select>
+
+
+  <div class="buttons">
+    <button (click)="updateReservation()" class="btn btn-success">Enregistrer</button>
+    <button (click)="selectedReservation = null" class="btn btn-secondary">Annuler</button>
+    <button (click)="deleteReservation(selectedReservation.id)" class="btn btn-danger">Supprimer</button>
+  </div>
+</div>
+
+
+<!-- Formulaire de création -->
+<!-- Formulaire de création (Apparaît seulement après avoir cliqué sur une date) -->
+<div *ngIf="selectedDate && !selectedReservation" class="modal">
+  <h3>Créer une Nouvelle Réservation</h3>
+
+  <!-- Si l'utilisateur n'est pas connecté, demander nom et email -->
+  <div *ngIf="!isLoggedIn">
+    <label>Nom :</label>
+    <input type="text" [(ngModel)]="newName" class="form-control">
+
+    <label>Email :</label>
+    <input type="email" [(ngModel)]="newEmail" class="form-control">
+  </div>
+
+  <label>Table :</label>
+  <input type="number" [(ngModel)]="newTable" min="1" class="form-control">
+
+  <label>Nombre de personnes :</label>
+  <input type="number" [(ngModel)]="numPeople" min="1" max="6" class="form-control">
+
+  <label>Horaire :</label>
+  <select [(ngModel)]="selectedTimeSlot" class="form-control">
+    <option value="" disabled selected>Choisissez un créneau</option>
+    <option *ngFor="let slot of availableTimeSlots"
+            [value]="slot.value"
+            [disabled]="occupiedTimeSlots.includes(slot.value)">
+      {{ slot.label }}
+    </option>
+  </select>
+
+
+  <button (click)="createReservation()" class="btn btn-success">Enregistrer</button>
+</div>

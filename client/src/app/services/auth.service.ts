@@ -1,21 +1,58 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root' // ✅ Correctly provided at root level
+  providedIn: 'root'
 })
 export class AuthService {
   private apiUrl = 'http://localhost:5000/api/clients';
 
-  constructor(private http: HttpClient) {}
+  isLoggedInSubject = new BehaviorSubject<boolean>(!!this.getToken());
+  isLoggedIn$ = this.isLoggedInSubject.asObservable();
 
-  register(userData: { name: string; email: string; password: string }): Observable<any> {
+  constructor(private http: HttpClient, private ngZone: NgZone) {
+    console.log('✅ AuthService initialized');
+  }
+
+  register(userData: { name: string; email: string; password: string , isAdmin?: boolean}): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData);
   }
 
   login(credentials: { email: string; password: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials);
+    return this.http.post<{ token: string; user: any }>(`${this.apiUrl}/login`, credentials).pipe(
+      tap(response => {
+        this.handleLogin(response.token, response.user);
+      })
+    );
+  }
+
+
+
+  createOrGetClient(name: string, email: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/create-or-get-client`, { name, email }).pipe(
+      tap((response: any) => {
+        if (response.token && response.user) {
+          console.log("✅ Account created, logging in automatically...");
+          this.handleLogin(response.token, response.user);
+        }
+      })
+    );
+  }
+
+  private handleLogin(token: string, user: any): void {
+    this.saveToken(token);
+    localStorage.setItem('user', JSON.stringify(user));
+
+    this.ngZone.run(() => {
+      this.isLoggedInSubject.next(true);
+      window.dispatchEvent(new Event('auth-changed')); // ✅ Notify navbar update
+    });
+  }
+
+  getCurrentUser(): { id: number; name: string; email: string; is_admin: boolean } | null {
+    return JSON.parse(localStorage.getItem('user') || 'null');
   }
 
   saveToken(token: string): void {
@@ -28,5 +65,11 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
+
+    this.ngZone.run(() => { // ✅ Force UI update on logout
+      this.isLoggedInSubject.next(false);
+      window.dispatchEvent(new Event('auth-changed'));
+    });
   }
 }
