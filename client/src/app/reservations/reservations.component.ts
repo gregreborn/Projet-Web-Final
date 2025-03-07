@@ -228,19 +228,34 @@ export class ReservationsComponent implements OnInit {
     this.authService.createOrGetClient(this.newName, this.newEmail).subscribe((clientResponse: any) => {
       console.log("✅ Réponse du backend :", clientResponse);
 
+      if (!clientResponse.user?.id) {
+        console.error("❌ Error: Client ID missing, cannot create reservation.");
+        return;
+      }
+
+      // ✅ Avoid duplicate calls if user is already in local storage
+      if (localStorage.getItem('user')) {
+        console.log("🔹 User already exists in storage, skipping duplicate login.");
+        this.currentUser = clientResponse.user;
+        return;
+      }
+
       if (clientResponse.autoPassword) {
         alert(`Votre compte a été créé avec le mot de passe : ${clientResponse.autoPassword}\nVeuillez le modifier.`);
         this.authService.login({ email: this.newEmail, password: clientResponse.autoPassword }).subscribe(() => {
           this.currentUser = clientResponse.user;
           this.isLoggedIn = true;
-          this.createReservation();
+
+          // ✅ Delay reservation creation to ensure auth is fully set
+          setTimeout(() => this.createReservation(), 500);
         });
       } else {
         this.currentUser = clientResponse.user;
-        this.createReservation();
+        this.createReservation(); // ✅ Ensure this only happens ONCE
       }
     });
   }
+
 
   deleteReservation(reservationId: number): void {
     if (!confirm('Voulez-vous vraiment annuler cette réservation ?')) return;

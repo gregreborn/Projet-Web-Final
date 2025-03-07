@@ -34,9 +34,12 @@ export class DashboardComponent implements OnInit {
 
     if (this.isAdmin) {
       console.log("🔹 Redirecting to admin dashboard...");
-      this.router.navigate(['/admin/dashboard']); // ✅ Ensure this route exists
+      this.router.navigate(['/admin/clients']);
+    } else {
+      this.loadCurrentUser(); // Load data for non-admin clients
     }
   }
+
 
   loadCurrentUser(): void {
     this.currentUser = this.authService.getCurrentUser();

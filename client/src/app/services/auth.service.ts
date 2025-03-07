@@ -42,6 +42,15 @@ export class AuthService {
   }
 
   private handleLogin(token: string, user: any): void {
+    if (!user || !token) return; // ✅ Ensure user and token exist
+
+    const existingUser = JSON.parse(localStorage.getItem('user') || 'null');
+
+    if (existingUser && existingUser.id === user.id) {
+      console.log("🔹 User already logged in, skipping redundant login process.");
+      return; // ✅ Prevent unnecessary re-authentication loop
+    }
+
     this.saveToken(token);
     localStorage.setItem('user', JSON.stringify(user));
 
@@ -49,7 +58,10 @@ export class AuthService {
       this.isLoggedInSubject.next(true);
       window.dispatchEvent(new Event('auth-changed')); // ✅ Notify navbar update
     });
+
+    console.log("✅ User logged in successfully:", user);
   }
+
 
   getCurrentUser(): { id: number; name: string; email: string; is_admin: boolean } | null {
     return JSON.parse(localStorage.getItem('user') || 'null');

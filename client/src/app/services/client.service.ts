@@ -22,8 +22,14 @@ export class ClientService {
 
   // Récupérer tous les clients (pour l'admin)
   getClients(): Observable<Client[]> {
-    return this.http.get<Client[]>(this.apiUrl);
+    const token = localStorage.getItem('token');
+    console.log("📡 Sending request with token:", token); // Debugging
+
+    return this.http.get<Client[]>(this.apiUrl, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
   }
+
 
   // Récupérer le profil du client connecté
   getProfile(): Observable<Client> {

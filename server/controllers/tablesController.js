@@ -1,4 +1,5 @@
 const Tables = require('../models/tablesModel');
+const pool = require('../db');
 
 // Get all tables
 exports.getTables = async (req, res) => {
