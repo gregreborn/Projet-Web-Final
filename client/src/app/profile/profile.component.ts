@@ -8,7 +8,7 @@ interface Client {
   id: number;
   name: string;
   email: string;
-  isAdmin?: boolean;
+  is_admin?: boolean;
 }
 
 @Component({
@@ -25,12 +25,11 @@ export class ProfileComponent implements OnInit {
   errorMessage: string | null = null;
   updatedName = '';
   updatedEmail = '';
-  currentUser: any = null;
-  usingAutoPassword = false;
   oldPassword = '';
   newPassword = '';
   confirmPassword = '';
-  isLoading = false; // ✅ Show loading state
+  usingAutoPassword = false;
+  isLoading = false;
 
   constructor(private clientService: ClientService, private authService: AuthService) {}
 
@@ -45,6 +44,7 @@ export class ProfileComponent implements OnInit {
         this.client = data;
         this.updatedName = data.name;
         this.updatedEmail = data.email;
+        this.detectAutoPassword();
         this.isLoading = false;
       },
       error: (err: any) => {
@@ -55,10 +55,14 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  detectAutoPassword(): void {
+    const autoPassword = localStorage.getItem('autoPassword');
+    this.usingAutoPassword = !!autoPassword;
+  }
+
   updateProfile(): void {
     if (!this.client) return;
 
-    // Reset previous error message
     this.errorMessage = null;
 
     if (!this.updatedName.trim() || !this.updatedEmail.trim()) {
@@ -78,12 +82,10 @@ export class ProfileComponent implements OnInit {
     this.clientService.updateProfile(this.client.id, updatedData).subscribe({
       next: (data: Client) => {
         this.client = data;
-        this.errorMessage = null; // ✅ Clear error message if successful
         alert('✅ Profil mis à jour avec succès!');
       },
       error: (err: any) => {
         console.error('❌ Erreur lors de la mise à jour du profil', err);
-
         if (err.error?.error?.includes("Cet email ne peut pas être utilisé")) {
           this.errorMessage = "⚠️ Cet email est déjà utilisé. Veuillez en choisir un autre.";
         } else {
@@ -94,8 +96,6 @@ export class ProfileComponent implements OnInit {
   }
 
   changePassword(): void {
-    this.errorMessage = null; // Reset error message
-
     if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
       this.errorMessage = '⚠️ Veuillez remplir tous les champs.';
       return;
@@ -113,9 +113,9 @@ export class ProfileComponent implements OnInit {
 
     this.clientService.changePassword(this.oldPassword, this.newPassword).subscribe({
       next: () => {
-        this.errorMessage = null; // ✅ Clear error message if successful
         alert('✅ Mot de passe changé avec succès !');
         this.usingAutoPassword = false;
+        localStorage.removeItem('autoPassword'); // Remove auto password flag
         this.oldPassword = '';
         this.newPassword = '';
         this.confirmPassword = '';
@@ -125,7 +125,6 @@ export class ProfileComponent implements OnInit {
       }
     });
   }
-
 
   private validateEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

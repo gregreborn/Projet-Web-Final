@@ -2,10 +2,15 @@
 
 <!-- Show error messages -->
 <div *ngIf="errorMessage" class="alert alert-danger">
-  ❌ {{ errorMessage }}
+  {{ errorMessage }}
 </div>
 
-<div *ngIf="client">
+<!-- Loading state -->
+<div *ngIf="isLoading">
+  <p>Chargement du profil...</p>
+</div>
+
+<div *ngIf="client && !isLoading">
   <label>Nom :</label>
   <input type="text" [(ngModel)]="updatedName" class="form-control">
 
@@ -13,6 +18,10 @@
   <input type="email" [(ngModel)]="updatedEmail" class="form-control">
 
   <button (click)="updateProfile()" class="btn btn-primary">Mettre à jour</button>
+
+  <p *ngIf="client.is_admin" class="alert alert-info">
+    ✅ Vous êtes un administrateur.
+  </p>
 </div>
 
 <hr>

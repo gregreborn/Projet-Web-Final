@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-RUN npm run build -- --configuration production --base-href ./ --source-map
+RUN npm run build -- --configuration production --base-href / --source-map
 
 # Debug step (optional): List the contents of the build output directory
 RUN ls -la /app/dist/client

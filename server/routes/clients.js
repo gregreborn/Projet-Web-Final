@@ -10,40 +10,50 @@ const bcrypt = require('bcrypt'); // ✅ If not already imported, add bcrypt
 if (!pool) {
     console.error("Database pool is not defined. Check db.js.");
 }
-// Create or retrieve a client based on email
+// Create or retrieve a client securely
 router.post('/create-or-get-client', async (req, res) => {
     const { name, email } = req.body;
 
     try {
-        const clientCheck = await pool.query(
-            `SELECT * FROM clients WHERE email = $1`,
-            [email]
-        );
+        const clientCheck = await pool.query(`SELECT * FROM clients WHERE email = $1`, [email]);
 
         if (clientCheck.rows.length > 0) {
-            // ✅ Client already exists, return their info
-            return res.json({ user: clientCheck.rows[0] });
+            // Existing client: Don't leak info, prompt for manual login
+            return res.status(400).json({
+                message: "Un compte avec cet email pourrait déjà exister. Veuillez vous connecter pour continuer."
+            });
         }
 
-        // ✅ Generate a random password for new users
+        // Generate a random password for new users
         const autoPassword = Math.random().toString(36).slice(-8);
         const hashedPassword = await bcrypt.hash(autoPassword, 10);
 
-        // ✅ Create a new user
+        // Create new user
         const newClient = await pool.query(
-            `INSERT INTO clients (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email`,
+            `INSERT INTO clients (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, is_admin`,
             [name, email, hashedPassword]
         );
 
-        res.json({
+        // Generate JWT token for automatic login
+        const token = jwt.sign(
+            { id: newClient.rows[0].id, email: newClient.rows[0].email, is_admin: newClient.rows[0].is_admin },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+
+        res.status(201).json({
             user: newClient.rows[0],
-            autoPassword
+            autoPassword, // So the user can change it later
+            token, // Automatically log in
+            message: "Compte créé avec succès. Connecté automatiquement."
         });
 
     } catch (error) {
+        console.error('Error in create-or-get-client:', error);
         res.status(500).json({ error: error.message });
     }
 });
+
 
 
 
@@ -65,13 +75,17 @@ router.post('/register', async (req, res) => {
 // Connexion d'un client
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
+
     try {
         const user = await Clients.loginClient(email, password);
-        if (!user) return res.status(401).json({ error: 'Identifiants invalides' });
 
-        // ✅ Generate JWT token
+        if (!user) {
+            return res.status(401).json({ error: 'Identifiants invalides' });
+        }
+
+        // Generate JWT token
         const token = jwt.sign(
-            { id: user.id, email: user.email, isAdmin: user.is_admin },
+            { id: user.id, email: user.email, is_admin: user.is_admin },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -79,9 +93,11 @@ router.post('/login', async (req, res) => {
         res.json({ token, user });
 
     } catch (error) {
+        console.error('Login error:', error);
         res.status(500).json({ error: error.message });
     }
 });
+
 
 
 // Récupérer la fiche du client connecté (profil)
@@ -111,7 +127,7 @@ router.put('/:id', authenticate, async (req, res) => {
 
     console.log(`🔹 Updating Profile - Authenticated User ID: ${userId}, Requested ID: ${requestedId}`);
 
-    if (requestedId !== userId && !req.user.isAdmin) {
+    if (requestedId !== userId && !req.user.is_admin) {
         console.warn("🚫 Forbidden: User not authorized to modify this profile.");
         return res.status(403).json({ error: 'Accès refusé' });
     }

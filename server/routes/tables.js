@@ -7,5 +7,6 @@ router.get('/', authenticate, tablesController.getTables);
 router.post('/', authenticate, isAdmin, tablesController.createTable);
 router.put('/:id', authenticate, isAdmin, tablesController.updateTable);
 router.delete('/:id', authenticate, isAdmin, tablesController.deleteTable);
+router.post('/init', authenticate, isAdmin, tablesController.initializeTables);
 
 module.exports = router;

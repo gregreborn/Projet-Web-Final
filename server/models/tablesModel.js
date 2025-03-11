@@ -10,6 +10,32 @@ const getAllTables = async () => {
     }
 };
 
+const initializeTables = async () => {
+    const tableConfig = [
+        { seats: 2, count: 2 },
+        { seats: 4, count: 4 },
+        { seats: 6, count: 4 },
+    ];
+
+    for (const config of tableConfig) {
+        for (let i = 0; i < config.count; i++) {
+            await pool.query('INSERT INTO tables (seats) VALUES ($1)', [config.seats]);
+        }
+    }
+};
+
+const getAvailableTable = async (numPeople, datetime) => {
+    const result = await pool.query(
+        `SELECT t.* FROM tables t
+         WHERE t.seats >= $1 AND t.id NOT IN (
+             SELECT table_id FROM reservations WHERE datetime = $2
+         ) ORDER BY t.seats ASC LIMIT 1`,
+        [numPeople, datetime]
+    );
+    return result.rows[0];
+};
+
+
 const createTable = async (seats) => {
     try {
         const result = await pool.query(
@@ -45,4 +71,4 @@ const deleteTable = async (id) => {
     }
 };
 
-module.exports = { getAllTables, createTable, updateTable, deleteTable };
+module.exports = { getAllTables, initializeTables,getAvailableTable, createTable, updateTable, deleteTable };

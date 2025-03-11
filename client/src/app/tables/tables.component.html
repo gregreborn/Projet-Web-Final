@@ -1,1 +1,24 @@
-<p>tables works!</p>
+<div>
+  <h2>Table Management</h2>
+
+  <!-- Create New Table -->
+  <div>
+    <input type="number" [(ngModel)]="newSeats" placeholder="Seats (2-6)" min="2" max="6">
+    <button (click)="createTable()">Add Table</button>
+  </div>
+
+  <!-- List Tables -->
+  <div *ngFor="let table of tables">
+    <div *ngIf="editTableId !== table.id">
+      <p>Table {{ table.id }} - Seats: {{ table.seats }}</p>
+      <button (click)="startEdit(table)">Edit</button>
+      <button (click)="deleteTable(table.id)">Delete</button>
+    </div>
+
+    <div *ngIf="editTableId === table.id">
+      <input type="number" [(ngModel)]="editSeats" placeholder="Seats (2-6)" min="2" max="6">
+      <button (click)="updateTable()">Save</button>
+      <button (click)="editTableId = null">Cancel</button>
+    </div>
+  </div>
+</div>

@@ -1,162 +1,112 @@
 const Reservations = require('../models/reservationsModel');
 const { validateServiceTime } = require('../models/reservationsModel');
 
+// ✅ Fetch Reservations (Admin, Clients)
 exports.getReservations = async (req, res) => {
     try {
-        console.log("User Info from Token:", req.user);
-
-        // ✅ Fetch all reservations from the database
-        const allReservations = await Reservations.getAllReservations();
-        console.log("🔹 All reservations from DB:", allReservations);
-
-        // ✅ If no user (public request), return only future reservations
-        if (!req.user) {
-            console.log("🔹 Public request: Showing only available reservations (no client info)");
-            const now = new Date().toISOString();
-
-            const filteredReservations = allReservations
-                .filter(r => new Date(r.datetime).toISOString() >= now) // Only future reservations
-                .map(r => ({
-                    datetime: r.datetime,
-                    table_id: r.table_id // Show table but NOT client details
-                }));
-
-            console.log("📤 Public reservations sent to frontend:", filteredReservations);
-            return res.json(filteredReservations);
-        }
-
-        // ✅ Admins see everything
-        if (req.user.isAdmin) {
-            console.log("✅ Admin fetching all reservations...");
+        if (req.user.is_admin) {
+            // ✅ Admin: Fetch all reservations
+            const allReservations = await Reservations.getAllReservations();
             return res.json(allReservations);
+        } else {
+            // ✅ Clients: Only their future reservations (from today and onward)
+            const today = new Date().toISOString().split('T')[0];
+            const userReservations = await Reservations.getClientReservations(req.user.id, today);
+            return res.json(userReservations);
         }
-
-        // ✅ Clients see only their own reservations
-        console.log(`Client ${req.user.id} fetching their reservations...`);
-        const userReservations = await Reservations.getClientReservations(req.user.id);
-        return res.json(userReservations);
     } catch (error) {
-        console.error("Error in getReservations:", error);
+        console.error("Error fetching reservations:", error);
         res.status(500).json({ error: error.message });
     }
 };
 
-
-
-
-
-
-
+// ✅ Create Reservation
 exports.createReservation = async (req, res) => {
-    console.log("📥 Requête reçue pour création de réservation:", req.body);
+    const { num_people, datetime } = req.body;
 
-    const { table_id, datetime, num_people } = req.body;
+    if (!num_people || !datetime) {
+        return res.status(400).json({ error: "Missing reservation data." });
+    }
+
+    // ✅ Validate reservation time
+    if (!validateServiceTime(datetime)) {
+        return res.status(400).json({ error: "Invalid service time for reservation." });
+    }
 
     try {
-        if (!table_id || !datetime || !num_people) {
-            console.error("❌ Données manquantes:", { table_id, datetime, num_people });
-            return res.status(400).json({ error: "Toutes les données de réservation sont requises." });
-        }
-
-        if (!Reservations.validateServiceTime(datetime)) {
-            console.error("❌ Heure de réservation invalide:", datetime);
-            return res.status(400).json({ error: "L'heure de réservation ne correspond à aucun service disponible." });
-        }
-
-        // ✅ Prevent multiple reservations per user on the same day
+        // ✅ Prevent multiple reservations by the same client on the same day
         const userReservations = await Reservations.getClientReservations(req.user.id);
-        const dateOnly = datetime.split('T')[0]; // Extract YYYY-MM-DD
-
+        const dateOnly = datetime.split('T')[0];
         const existingReservation = userReservations.find(res =>
             new Date(res.datetime).toISOString().startsWith(dateOnly)
         );
         if (existingReservation) {
-            console.error("❌ Conflit de réservation: L'utilisateur a déjà réservé ce jour-là.");
-            return res.status(400).json({ error: "Vous avez déjà une réservation pour ce jour-là." });
+            return res.status(400).json({ error: "You already have a reservation for this day." });
         }
 
-        // ✅ Prevent duplicate reservations for the same table/time
-        const conflict = await Reservations.checkReservationConflict(table_id, datetime);
-        if (conflict) {
-            console.error("❌ Conflit détecté: La table est déjà réservée.", conflict);
-            return res.status(400).json({ error: "Cette table est déjà réservée pour ce service à cette date/heure." });
-        }
-
-        console.log("✅ Données valides, création de la réservation...");
-        const reservation = await Reservations.createReservation(req.user.id, table_id, datetime, num_people);
-        return res.status(201).json(reservation);
+        // ✅ Create the reservation using automatic table assignment
+        const reservation = await Reservations.createReservation(req.user.id, num_people, datetime);
+        res.status(201).json(reservation);
     } catch (error) {
-        console.error("❌ Erreur lors de la réservation:", error);
-        return res.status(500).json({ error: error.message });
-    }
-};
-
-
-
-
-
-
-// Mettre à jour une réservation
-exports.updateReservation = async (req, res) => {
-    const reservationId = req.params.id;
-    const { table_id, datetime } = req.body;
-
-    try {
-        // Vérifier que la réservation existe
-        const existingReservation = await Reservations.getReservationById(reservationId);
-        if (!existingReservation) {
-            return res.status(404).json({ error: 'Réservation non trouvée' });
-        }
-
-        // Si ce n'est pas un admin, vérifier que la réservation appartient bien au client connecté
-        if (!req.user.isAdmin && existingReservation.client_id !== req.user.id) {
-            return res.status(403).json({ error: 'Accès refusé' });
-        }
-
-        // Vérifier si l'heure fournie correspond à un service valide
-        if (!Reservations.validateServiceTime(datetime)) {
-            return res.status(400).json({ error: 'L\'heure de réservation ne correspond à aucun service disponible.' });
-        }
-
-        // Vérifier les conflits d’horaire pour la table demandée
-        const conflict = await Reservations.checkReservationConflict(table_id, datetime, reservationId);
-        if (conflict) {
-            return res.status(400).json({ error: 'La table est déjà réservée pour ce service à cette date/heure.' });
-        }
-
-        // Effectuer la mise à jour de la réservation
-        const updatedReservation = await Reservations.updateReservation(reservationId, { table_id, datetime });
-        res.json(updatedReservation);
-    } catch (error) {
-        console.error("Erreur lors de la mise à jour de la réservation :", error);
+        console.error("Error creating reservation:", error);
         res.status(500).json({ error: error.message });
     }
 };
 
+// ✅ Update Reservation
+exports.updateReservation = async (req, res) => {
+    const reservationId = req.params.id;
+    const { num_people, datetime } = req.body;
 
+    if (!num_people || !datetime) {
+        return res.status(400).json({ error: "Missing updated reservation data." });
+    }
 
-// Supprimer une réservation
+    try {
+        // ✅ Verify the reservation exists
+        const existingReservation = await Reservations.getReservationById(reservationId);
+        if (!existingReservation) {
+            return res.status(404).json({ error: "Reservation not found." });
+        }
+
+        // ✅ Authorization Check: Admins can edit any reservation, clients only their own
+        if (!req.user.is_admin && existingReservation.client_id !== req.user.id) {
+            return res.status(403).json({ error: "Access denied." });
+        }
+
+        // ✅ Validate reservation time
+        if (!validateServiceTime(datetime)) {
+            return res.status(400).json({ error: "Invalid service time." });
+        }
+
+        // ✅ Update the reservation with automatic table reassignment
+        const updatedReservation = await Reservations.updateReservation(reservationId, num_people, datetime);
+        res.json(updatedReservation);
+    } catch (error) {
+        console.error("Error updating reservation:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// ✅ Delete Reservation
 exports.deleteReservation = async (req, res) => {
     const reservationId = req.params.id;
 
     try {
-        // Vérifier que la réservation existe
         const existingReservation = await Reservations.getReservationById(reservationId);
         if (!existingReservation) {
-            return res.status(404).json({ error: 'Réservation non trouvée' });
+            return res.status(404).json({ error: "Reservation not found." });
         }
 
-        // Si ce n'est pas un admin, vérifier que la réservation appartient bien au client connecté
-        if (!req.user.isAdmin && existingReservation.client_id !== req.user.id) {
-            return res.status(403).json({ error: 'Accès refusé' });
+        // Authorization Check: Admins can delete any, clients can only delete theirs
+        if (!req.user.is_admin && existingReservation.client_id !== req.user.id) {
+            return res.status(403).json({ error: "Access denied." });
         }
 
-        // Supprimer la réservation
         await Reservations.deleteReservation(reservationId);
-        res.json({ message: 'Réservation supprimée avec succès' });
+        res.json({ message: "Reservation deleted successfully." });
     } catch (error) {
-        console.error("Erreur lors de la suppression de la réservation :", error);
+        console.error("Error deleting reservation:", error);
         res.status(500).json({ error: error.message });
     }
 };
-

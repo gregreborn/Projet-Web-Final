@@ -4,8 +4,7 @@ const reservationsController = require('../controllers/reservationsController');
 const { authenticate } = require('../middleware/auth'); // ✅ Ensure correct import
 
 // ✅ Allow public users to access reservation data
-router.get('/', reservationsController.getReservations);
-
+router.get('/', authenticate, reservationsController.getReservations);
 // ✅ Require authentication for protected actions
 router.post('/', authenticate, reservationsController.createReservation);
 router.put('/:id', authenticate, reservationsController.updateReservation);

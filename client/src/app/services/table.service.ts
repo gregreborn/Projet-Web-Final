@@ -1,12 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface Table {
   id: number;
-  table_number: number;
-  capacity: number;
-  // Add any other fields as needed
+  seats: number;
 }
 
 @Injectable({
@@ -15,19 +13,29 @@ export interface Table {
 export class TableService {
   private apiUrl = 'http://localhost:5000/api/tables';
 
-  constructor(private http: HttpClient) {
-    console.log('✅ TableService initialized');
-  }
+  constructor(private http: HttpClient) {}
 
-  // Retrieve all tables from the backend
-  getTables(): Observable<Table[]> {
+  private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
-    console.log('🔹 TableService token:', token);
-    return this.http.get<Table[]>(this.apiUrl, {
-      headers: { Authorization: `Bearer ${token}` }
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
     });
   }
 
-  // Optionally add more methods for table operations:
-  // createTable, updateTable, deleteTable, etc.
+  getTables(): Observable<Table[]> {
+    return this.http.get<Table[]>(this.apiUrl, { headers: this.getHeaders() });
+  }
+
+  createTable(data: { seats: number }): Observable<Table> {
+    return this.http.post<Table>(this.apiUrl, data, { headers: this.getHeaders() });
+  }
+
+  updateTable(id: number, data: { seats: number }): Observable<Table> {
+    return this.http.put<Table>(`${this.apiUrl}/${id}`, data, { headers: this.getHeaders() });
+  }
+
+  deleteTable(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+  }
 }

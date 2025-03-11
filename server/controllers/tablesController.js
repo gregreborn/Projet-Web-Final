@@ -50,3 +50,13 @@ exports.deleteTable = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.initializeTables = async (req, res) => {
+    try {
+        await Tables.initializeTables();
+        res.status(201).json({ message: 'Tables initialized successfully.' });
+    } catch (error) {
+        console.error('Error initializing tables:', error);
+        res.status(500).json({ error: 'Failed to initialize tables.' });
+    }
+};

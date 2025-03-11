@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 interface Client {
@@ -7,7 +7,6 @@ interface Client {
   name: string;
   email: string;
   is_admin: boolean;
-  // Autres champs si nécessaires
 }
 
 @Injectable({
@@ -20,52 +19,58 @@ export class ClientService {
     console.log('✅ ClientService initialized');
   }
 
-  // Récupérer tous les clients (pour l'admin)
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  // ✅ Create or get client for reservation
+  createOrGetClient(clientData: { name: string; email: string }): Observable<any> {
+    return this.http.post(`${this.apiUrl}/create-or-get-client`, clientData);
+  }
+
+  // ✅ Get all clients (for admin)
   getClients(): Observable<Client[]> {
-    const token = localStorage.getItem('token');
-    console.log("📡 Sending request with token:", token); // Debugging
-
     return this.http.get<Client[]>(this.apiUrl, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.getHeaders()
     });
   }
 
-
-  // Récupérer le profil du client connecté
+  // ✅ Get profile of the logged-in client
   getProfile(): Observable<Client> {
-    const token = localStorage.getItem('token');
-    console.log('🔹 Sending Token:', token); // ✅ Debug Log
     return this.http.get<Client>(`${this.apiUrl}/profile`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: this.getHeaders()
     });
   }
 
-
+  // ✅ Change client password
   changePassword(oldPassword: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/change-password`, { oldPassword, newPassword }, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      headers: this.getHeaders()
     });
   }
 
-
-  // Mettre à jour le profil du client
+  // ✅ Update client profile
   updateProfile(clientId: number, updatedData: { name?: string; email?: string; password?: string }): Observable<Client> {
-    const token = localStorage.getItem('token'); // ✅ Retrieve token
-    console.log('🔹 Sending Token for Profile Update:', token); // ✅ Debugging
-
     return this.http.put<Client>(`${this.apiUrl}/${clientId}`, updatedData, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
+      headers: this.getHeaders()
     });
   }
 
-
-  // Supprimer un client (fonctionnalité admin)
+  // ✅ Delete a client (admin functionality)
   deleteClient(clientId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${clientId}`);
+    return this.http.delete(`${this.apiUrl}/${clientId}`, {
+      headers: this.getHeaders()
+    });
   }
 
-  // (Optionnel) Créer un client (pour l'administration)
+  // ✅ Create a new client (optional for admin)
   createClient(clientData: { name: string; email: string; password: string; is_admin?: boolean }): Observable<Client> {
-    return this.http.post<Client>(this.apiUrl, clientData);
+    return this.http.post<Client>(this.apiUrl, clientData, {
+      headers: this.getHeaders()
+    });
   }
 }

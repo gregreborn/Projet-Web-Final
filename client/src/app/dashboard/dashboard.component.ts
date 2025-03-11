@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { ClientService } from '../services/client.service';
 import { ReservationService } from '../services/reservation.service';
-import {Router, RouterLink} from '@angular/router';
-import {NgIf} from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
@@ -29,37 +29,59 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const user = this.authService.getCurrentUser();
-    this.isAdmin = user?.is_admin ?? false;
-
-    if (this.isAdmin) {
-      console.log("🔹 Redirecting to admin dashboard...");
-      this.router.navigate(['/admin/clients']);
-    } else {
-      this.loadCurrentUser(); // Load data for non-admin clients
-    }
+    this.loadCurrentUser();
   }
-
 
   loadCurrentUser(): void {
     this.currentUser = this.authService.getCurrentUser();
-    if (this.currentUser) {
-      this.isAdmin = this.currentUser.isAdmin;
-      this.fetchDashboardData();
+    if (!this.currentUser) {
+      this.router.navigate(['/login']);
+      return;
     }
+
+    this.isAdmin = this.currentUser.is_admin ?? false;
+    this.fetchDashboardData();
   }
 
   fetchDashboardData(): void {
     if (this.isAdmin) {
-      this.clientService.getClients().subscribe((clients) => {
-        this.totalClients = clients.length;
-      });
-      this.reservationService.fetchReservations();
+      this.loadAdminData();
     } else {
-      this.reservationService.reservations$.subscribe((reservations) => {
+      this.loadClientData();
+    }
+  }
+
+  loadAdminData(): void {
+    this.clientService.getClients().subscribe({
+      next: (clients) => {
+        this.totalClients = clients.length;
+      },
+      error: (err) => {
+        console.error('❌ Erreur lors du chargement des clients', err);
+      }
+    });
+
+    this.reservationService.fetchReservations();
+    this.reservationService.reservations$.subscribe({
+      next: (reservations) => {
+        this.totalReservations = reservations.length;
+      },
+      error: (err) => {
+        console.error('❌ Erreur lors du chargement des réservations', err);
+      }
+    });
+  }
+
+  loadClientData(): void {
+    this.reservationService.fetchReservations();
+    this.reservationService.reservations$.subscribe({
+      next: (reservations) => {
         this.userReservations = reservations.filter(res => res.client_id === this.currentUser.id);
         this.totalReservations = this.userReservations.length;
-      });
-    }
+      },
+      error: (err) => {
+        console.error('❌ Erreur lors du chargement des réservations client', err);
+      }
+    });
   }
 }
