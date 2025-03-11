@@ -1,0 +1,15 @@
+<form [formGroup]="clientForm" (ngSubmit)="submitClient()">
+  <div class="form-group">
+    <label for="name">Nom:</label>
+    <input type="text" id="name" class="form-control" formControlName="name" required>
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email:</label>
+    <input type="email" id="email" class="form-control" formControlName="email" required>
+  </div>
+
+  <button type="submit" class="btn btn-primary" [disabled]="!clientForm.valid">
+    {{ isEditMode ? 'Mettre à Jour' : 'Créer' }}
+  </button>
+</form>

@@ -54,15 +54,30 @@ const getAllReservations = async () => {
 
 
 // ✅ Get client's future reservations (from today onwards)
+// ✅ Get client's future reservations (from today onwards)
 const getClientReservations = async (client_id, today) => {
     const result = await pool.query(
-        `SELECT * FROM reservations 
-         WHERE client_id = $1 AND DATE(datetime) >= $2 
-         ORDER BY datetime`,
+        `SELECT
+             r.id,
+             r.client_id,
+             c.name AS client_name,
+             c.email AS email,
+             r.table_id,
+             r.num_people,
+             r.datetime
+         FROM reservations r
+                  JOIN clients c ON r.client_id = c.id
+         WHERE r.client_id = $1 AND DATE(r.datetime) >= $2
+         ORDER BY r.datetime`,
         [client_id, today]
     );
-    return result.rows;
+
+    return result.rows.map(row => ({
+        ...row,
+        datetime: new Date(row.datetime).toISOString(),
+    }));
 };
+
 
 
 // ✅ Get reservation by ID

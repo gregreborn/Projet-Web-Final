@@ -17,6 +17,8 @@ import {FormsModule} from '@angular/forms';
 })
 export class ReservationsComponent implements OnInit {
   reservations: any[] = [];
+  filteredReservations: any[] = [];
+
   currentUser: any;
   isAdmin = false;
   searchQuery = '';
@@ -37,6 +39,7 @@ export class ReservationsComponent implements OnInit {
       } else if (this.currentUser) {
         this.reservations = reservations.filter(res => res.client_id === this.currentUser.id);
       }
+      this.triggerSearch();
     });
 
     this.reservationService.fetchReservations().subscribe();
@@ -60,6 +63,10 @@ export class ReservationsComponent implements OnInit {
     if (time >= '20:00' && time <= '22:30') return '20:00 - 22:30';
 
     return 'Créneau inconnu';
+  }
+
+  triggerSearch(): void {
+    this.filteredReservations = this.filterReservations();
   }
 
   openReservationForm(reservation?: any): void {

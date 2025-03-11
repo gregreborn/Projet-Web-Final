@@ -8,8 +8,18 @@
 
     <button routerLink="/tables" class="btn btn-secondary">Gérer les tables</button>
     <button routerLink="/reservations" class="btn btn-warning">Gérer les réservations</button>
-  </div>
 
+    <h3>Liste des Clients</h3>
+    <button class="btn btn-success mb-3" (click)="openClientForm()">Créer un Client</button>
+
+    <div *ngFor="let client of clients" class="client-item">
+      <p>{{ client.name }} ({{ client.email }})</p>
+
+      <button class="btn btn-primary" (click)="createReservationForClient(client)">Créer une Réservation</button>
+      <button class="btn btn-warning" (click)="editClient(client)">Modifier</button>
+      <button class="btn btn-danger" (click)="deleteClient(client.id)">Supprimer</button>
+    </div>
+  </div>
 
   <ng-template #userDashboard>
     <h2>Client Dashboard</h2>

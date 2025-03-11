@@ -2,15 +2,18 @@
   <h2>Liste des Réservations</h2>
 
   <!-- Search Bar -->
-  <input type="text" class="form-control mb-3" placeholder="Rechercher par nom ou date..." [(ngModel)]="searchQuery">
+  <input type="text" class="form-control mb-3"
+         placeholder="Rechercher par nom ou date..."
+         [(ngModel)]="searchQuery"
+         (keyup.enter)="triggerSearch()">
 
-  <button class="btn btn-success mb-3" (click)="openReservationForm()">Créer une Réservation</button>
+  <button class="btn btn-primary mb-3" (click)="triggerSearch()">Rechercher</button>
 
-  <div *ngIf="filterReservations().length === 0">
+  <div *ngIf="filteredReservations.length === 0">
     <p>Aucune réservation trouvée.</p>
   </div>
 
-  <div *ngFor="let reservation of filterReservations()" class="reservation-item">
+  <div *ngFor="let reservation of filteredReservations" class="reservation-item">
     <p>
       📅 <strong>Jour:</strong> {{ formatDate(reservation.datetime) }}<br>
       🕒 <strong>Créneau Horaire:</strong> {{ getTimeSlot(reservation.datetime) }}<br>

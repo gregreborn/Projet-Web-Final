@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ReservationService } from '../services/reservation.service';
 import { ClientService } from '../services/client.service';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
-import {NgIf} from '@angular/common';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-reservation-form',
@@ -22,56 +22,53 @@ export class ReservationFormComponent implements OnInit {
   successMessage: string | null = null;
   isEditMode = false;
   reservationId: number | null = null;
+  selectedClient: any = null;
+  isAdmin = false;
 
   constructor(
     private fb: FormBuilder,
     private reservationService: ReservationService,
     private clientService: ClientService,
-    private authService: AuthService,
+    protected authService: AuthService,
     private router: Router
   ) {
     this.reservationForm = this.fb.group({
-      name: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
+      date: ['', Validators.required],
+      timeSlot: ['', Validators.required],
       numPeople: [1, [Validators.required, Validators.min(1), Validators.max(6)]],
-      datetime: ['', Validators.required]
     });
   }
 
   ngOnInit(): void {
-    const state = history.state.reservation;
+    const state = history.state;
+    const currentUser = this.authService.getCurrentUser();
+    this.isAdmin = currentUser?.is_admin || false;
 
-    if (state) {
+    if (state.client) {
+      this.selectedClient = state.client;
+    }
+
+    if (state.reservation) {
       this.isEditMode = true;
-      this.reservationId = state.id;
+      this.reservationId = state.reservation.id;
 
-      const [date, time] = state.datetime.split('T');
+      // ✅ Ensure `selectedClient` is set when modifying
+      this.selectedClient = {
+        id: state.reservation.client_id,
+        name: state.reservation.client_name,
+        email: state.reservation.email
+      };
+
+      const [date, time] = state.reservation.datetime.split('T');
 
       this.reservationForm.patchValue({
-        name: state.client_name,
-        email: state.email,
         date: date,
         timeSlot: time.substring(0, 5),
-        numPeople: state.num_people
+        numPeople: state.reservation.num_people
       });
     }
   }
 
-
-  prefillForm(reservation: any): void {
-    this.reservationForm.patchValue({
-      name: reservation.client_name || '',
-      email: reservation.email || '', // ✅ Fixed key
-      numPeople: reservation.num_people || 1,
-      datetime: reservation.datetime ? reservation.datetime.substring(0, 16) : ''
-    });
-
-    // Manually mark controls as touched to trigger validation
-    Object.keys(this.reservationForm.controls).forEach(field => {
-      const control = this.reservationForm.get(field);
-      control?.markAsTouched();
-    });
-  }
 
   submitReservation(): void {
     this.errorMessage = null;
@@ -82,30 +79,25 @@ export class ReservationFormComponent implements OnInit {
       return;
     }
 
-    const { name, email, numPeople, date, timeSlot } = this.reservationForm.value;
+    const { date, timeSlot, numPeople } = this.reservationForm.value;
     const datetime = `${date}T${timeSlot}:00Z`;
+
+    const clientId = this.isAdmin ? this.selectedClient?.id : this.authService.getCurrentUser()?.id;
+
+    if (!clientId) {
+      this.errorMessage = 'Client ID is missing.';
+      return;
+    }
 
     if (this.isEditMode && this.reservationId) {
       this.updateReservation(this.reservationId, numPeople, datetime);
     } else {
-      this.createOrGetClientAndReservation(name, email, numPeople, datetime);
+      this.createReservation(clientId, numPeople, datetime);
     }
   }
 
-  private createOrGetClientAndReservation(name: string, email: string, numPeople: number, datetime: string): void {
-    this.clientService.createOrGetClient({ name, email }).subscribe({
-      next: (response: any) => {
-        if (response.token) {
-          this.authService.saveToken(response.token);
-          this.autoPassword = response.autoPassword;
-        }
-        this.createReservation(response.user.id, numPeople, datetime);
-      },
-      error: (error: { error: { message: string; }; }) => {
-        this.errorMessage = error.error.message || 'Erreur lors de la création du client.';
-      }
-    });
-  }
+
+
 
   private createReservation(clientId: number, numPeople: number, datetime: string): void {
     this.reservationService.createReservation({
@@ -114,17 +106,19 @@ export class ReservationFormComponent implements OnInit {
       datetime: datetime
     }).subscribe({
       next: () => {
-        this.successMessage = '✅ Réservation réussie!';
-        if (this.autoPassword) {
-          this.successMessage += ` Votre mot de passe temporaire est: ${this.autoPassword}`;
-        }
-        setTimeout(() => this.router.navigate(['/dashboard']), 2000);
+        this.successMessage = '✅ Réservation créée avec succès!';
+        setTimeout(() => {
+          const redirectPath = this.isAdmin ? '/reservations' : '/dashboard';
+          this.router.navigate([redirectPath]);
+        }, 2000);
       },
       error: (error: { error: { message: string; }; }) => {
         this.errorMessage = error.error.message || 'Erreur lors de la création de la réservation.';
       }
     });
   }
+
+
 
   private updateReservation(reservationId: number, numPeople: number, datetime: string): void {
     this.reservationService.updateReservation(reservationId, {
@@ -133,11 +127,13 @@ export class ReservationFormComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.successMessage = '✅ Réservation mise à jour!';
-        setTimeout(() => this.router.navigate(['/dashboard']), 2000);
+        // ✅ Redirect to the reservations page instead of dashboard
+        setTimeout(() => this.router.navigate(['/reservations']), 2000);
       },
       error: (error: { error: { message: string; }; }) => {
         this.errorMessage = error.error.message || 'Erreur lors de la mise à jour de la réservation.';
       }
     });
   }
+
 }

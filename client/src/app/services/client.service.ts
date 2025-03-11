@@ -32,9 +32,16 @@ export class ClientService {
     return this.http.post(`${this.apiUrl}/create-or-get-client`, clientData);
   }
 
-  // ✅ Get all clients (for admin)
+  // ✅ Get all clients (admin)
   getClients(): Observable<Client[]> {
     return this.http.get<Client[]>(this.apiUrl, {
+      headers: this.getHeaders()
+    });
+  }
+
+  // ✅ Get a specific client by ID
+  getClientById(clientId: number): Observable<Client> {
+    return this.http.get<Client>(`${this.apiUrl}/${clientId}`, {
       headers: this.getHeaders()
     });
   }
@@ -46,13 +53,6 @@ export class ClientService {
     });
   }
 
-  // ✅ Change client password
-  changePassword(oldPassword: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/change-password`, { oldPassword, newPassword }, {
-      headers: this.getHeaders()
-    });
-  }
-
   // ✅ Update client profile
   updateProfile(clientId: number, updatedData: { name?: string; email?: string; password?: string }): Observable<Client> {
     return this.http.put<Client>(`${this.apiUrl}/${clientId}`, updatedData, {
@@ -60,14 +60,29 @@ export class ClientService {
     });
   }
 
-  // ✅ Delete a client (admin functionality)
+
+  // ✅ Change client password
+  changePassword(oldPassword: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/change-password`, { oldPassword, newPassword }, {
+      headers: this.getHeaders()
+    });
+  }
+
+  // ✅ Update client profile (admin and client can use this)
+  updateClient(clientId: number, updatedData: { name?: string; email?: string; password?: string }): Observable<Client> {
+    return this.http.put<Client>(`${this.apiUrl}/${clientId}`, updatedData, {
+      headers: this.getHeaders()
+    });
+  }
+
+  // ✅ Delete a client (admin)
   deleteClient(clientId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${clientId}`, {
       headers: this.getHeaders()
     });
   }
 
-  // ✅ Create a new client (optional for admin)
+  // ✅ Create a new client (admin)
   createClient(clientData: { name: string; email: string; password: string; is_admin?: boolean }): Observable<Client> {
     return this.http.post<Client>(this.apiUrl, clientData, {
       headers: this.getHeaders()

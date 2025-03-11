@@ -22,9 +22,9 @@ exports.getReservations = async (req, res) => {
 
 // ✅ Create Reservation
 exports.createReservation = async (req, res) => {
-    const { num_people, datetime } = req.body;
+    const { client_id, num_people, datetime } = req.body;
 
-    if (!num_people || !datetime) {
+    if (!num_people || !datetime || (!client_id && req.user.is_admin)) {
         return res.status(400).json({ error: "Missing reservation data." });
     }
 
@@ -34,8 +34,11 @@ exports.createReservation = async (req, res) => {
     }
 
     try {
+        // ✅ Determine the correct client ID
+        const userId = req.user.is_admin ? client_id : req.user.id;
+
         // ✅ Prevent multiple reservations by the same client on the same day
-        const userReservations = await Reservations.getClientReservations(req.user.id);
+        const userReservations = await Reservations.getClientReservations(userId);
         const dateOnly = datetime.split('T')[0];
         const existingReservation = userReservations.find(res =>
             new Date(res.datetime).toISOString().startsWith(dateOnly)
@@ -44,14 +47,15 @@ exports.createReservation = async (req, res) => {
             return res.status(400).json({ error: "You already have a reservation for this day." });
         }
 
-        // ✅ Create the reservation using automatic table assignment
-        const reservation = await Reservations.createReservation(req.user.id, num_people, datetime);
+        // ✅ Create the reservation
+        const reservation = await Reservations.createReservation(userId, num_people, datetime);
         res.status(201).json(reservation);
     } catch (error) {
         console.error("Error creating reservation:", error);
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // ✅ Update Reservation
 exports.updateReservation = async (req, res) => {
