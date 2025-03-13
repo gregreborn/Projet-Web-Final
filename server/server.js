@@ -1,34 +1,50 @@
-const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-require('dotenv').config();
-const pool = require('./db'); // Import DB connection
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import csrf from 'csurf';
+import clientsRoutes from './routes/clients.js';
+import reservationsRoutes from './routes/reservations.js';
+import tablesRoutes from './routes/tables.js';
+import dotenv from 'dotenv';
+import cors from 'cors';
+
+dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:4200', // ✅ Allow requests from frontend
-    allowedHeaders: ['Authorization', 'Content-Type'], // ✅ Ensure Authorization is allowed
-    credentials: true // ✅ Allow cookies and authentication headers
+    origin: process.env.NODE_ENV === 'production' ? 'http://localhost' : 'http://localhost:4200',
+    credentials: true
 }));
-app.use(bodyParser.json());
+
+app.use(cookieParser());
+app.use(express.json());
+
+// ✅ CSRF Middleware (with environment consideration)
+app.use(
+    csrf({
+        cookie: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production', // Only secure in production
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+        }
+    }),
+    (req, res, next) => {
+        res.cookie('XSRF-TOKEN', req.csrfToken(), {
+            httpOnly: false,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax'
+        });
+        next();
+    }
+);
 
 // Routes
-const clientsRoute = require('./routes/clients');
-const tablesRoute = require('./routes/tables');
-const reservationsRoute = require('./routes/reservations');
+app.use('/api/clients', clientsRoutes);
+app.use('/api/reservations', reservationsRoutes);
+app.use('/api/tables', tablesRoutes);
 
-app.use('/api/clients', clientsRoute);
-app.use('/api/tables', tablesRoute);
-app.use('/api/reservations', reservationsRoute);
-
-// Root route for testing
-app.get('/', (req, res) => {
-    res.send('Welcome to the Restaurant Reservation API! 🎉');
-});
-
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server running on http://localhost:${PORT}`);
 });

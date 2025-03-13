@@ -13,10 +13,12 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-          test: [ "CMD", "pg_isready", "-U", "postgres" ]
-          interval: 5s
-          retries: 5
-          timeout: 2s
+      test: [ "CMD", "pg_isready", "-U", "postgres" ]
+      interval: 5s
+      retries: 5
+      timeout: 2s
+    networks:
+      - restaurant_network
 
   backend:
     build: ./server
@@ -24,11 +26,13 @@ services:
     restart: always
     depends_on:
       db:
-        condition: service_healthy  # Attendre que PostgreSQL soit prêt !
+        condition: service_healthy
     environment:
       DATABASE_URL: "postgres://postgres:admin@db:5432/restaurant_db"
     ports:
       - "5000:5000"
+    networks:
+      - restaurant_network
 
   frontend:
     build: ./client
@@ -38,6 +42,11 @@ services:
       - backend
     ports:
       - "4200:80"
+    networks:
+      - restaurant_network
+
+networks:
+  restaurant_network:
 
 volumes:
   db_data:

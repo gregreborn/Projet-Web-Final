@@ -11,7 +11,7 @@ export interface Table {
   providedIn: 'root'
 })
 export class TableService {
-  private apiUrl = 'http://localhost:5000/api/tables'; // Ensure this is correct
+  private apiUrl = '/api/tables'; // Use relative path for proxy
 
   constructor(private http: HttpClient) {}
 
@@ -24,19 +24,30 @@ export class TableService {
   }
 
   getTables(): Observable<Table[]> {
-    return this.http.get<Table[]>(this.apiUrl, { headers: this.getHeaders() });
+    return this.http.get<Table[]>(this.apiUrl, {
+      headers: this.getHeaders(),
+      withCredentials: true
+    });
   }
 
   createTable(table: { seats: number }): Observable<Table> {
-    return this.http.post<Table>(this.apiUrl, table, { headers: this.getHeaders() });
+    return this.http.post<Table>(this.apiUrl, table, {
+      headers: this.getHeaders(),
+      withCredentials: true
+    });
   }
 
-
   updateTable(id: number, updatedData: Partial<Table>): Observable<Table> {
-    return this.http.put<Table>(`${this.apiUrl}/${id}`, updatedData, { headers: this.getHeaders() });
+    return this.http.put<Table>(`${this.apiUrl}/${id}`, updatedData, {
+      headers: this.getHeaders(),
+      withCredentials: true
+    });
   }
 
   deleteTable(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+    return this.http.delete(`${this.apiUrl}/${id}`, {
+      headers: this.getHeaders(),
+      withCredentials: true
+    });
   }
 }

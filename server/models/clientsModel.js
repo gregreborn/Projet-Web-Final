@@ -1,9 +1,10 @@
-const pool = require('../db');
-const bcrypt = require('bcrypt');
+import pool from '../db.js';
+import bcrypt from 'bcrypt';
+
 const saltRounds = 10;
 
 // Enregistrer un nouveau client
-async function registerClient(name, email, password) {
+export async function registerClient(name, email, password) {
     // Hachage du mot de passe
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const result = await pool.query(
@@ -15,7 +16,7 @@ async function registerClient(name, email, password) {
 }
 
 // Connexion d'un client
-async function loginClient(email, password) {
+export async function loginClient(email, password) {
     const result = await pool.query(
         `SELECT * FROM clients WHERE email = $1`,
         [email]
@@ -32,7 +33,7 @@ async function loginClient(email, password) {
 }
 
 // Récupérer un client par son ID
-async function getClientById(id) {
+export async function getClientById(id) {
     const result = await pool.query(
         `SELECT * FROM clients WHERE id = $1`,
         [id]
@@ -41,7 +42,7 @@ async function getClientById(id) {
 }
 
 // Mettre à jour un client
-async function updateClient(id, updatedData) {
+export async function updateClient(id, updatedData) {
     const fields = [];
     const values = [];
     let idx = 1;
@@ -90,18 +91,16 @@ async function updateClient(id, updatedData) {
     return result.rows[0];
 }
 
-
-
 // Récupérer la liste de tous les clients (pour l'admin)
-async function getAllClients() {
+export async function getAllClients() {
     const result = await pool.query(
         `SELECT * FROM clients ORDER BY id`
     );
     return result.rows;
 }
 
-// ✅ Create a new client
-async function createClient(name, email, password, is_admin = false) {
+// Créer un nouveau client
+export async function createClient(name, email, password, is_admin = false) {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const result = await pool.query(
         `INSERT INTO clients (name, email, password, is_admin)
@@ -111,8 +110,8 @@ async function createClient(name, email, password, is_admin = false) {
     return result.rows[0];
 }
 
-// ✅ Check if email already exists
-async function getClientByEmail(email) {
+// Vérifier si un email existe déjà
+export async function getClientByEmail(email) {
     const result = await pool.query(
         `SELECT * FROM clients WHERE email = $1`,
         [email]
@@ -120,25 +119,11 @@ async function getClientByEmail(email) {
     return result.rows[0];
 }
 
-
-
 // Supprimer un client (pour l'admin)
-async function deleteClient(id) {
+export async function deleteClient(id) {
     const result = await pool.query(
         `DELETE FROM clients WHERE id = $1`,
         [id]
     );
     return result.rowCount;
 }
-
-
-module.exports = {
-    registerClient,
-    loginClient,
-    getClientById,
-    updateClient,
-    getAllClients,
-    deleteClient,
-    createClient,
-    getClientByEmail
-};

@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
-const authenticate = (req, res, next) => {
+export const authenticate = (req, res, next) => {
     let token = req.header('Authorization');
 
-    console.log('🔹 Incoming Token Header:', token); // ✅ Log raw token
+    console.log('🔹 Incoming Token Header:', token); // Log raw token
 
     if (!token) {
         console.error('❌ No token provided');
@@ -11,21 +11,21 @@ const authenticate = (req, res, next) => {
     }
 
     if (token.startsWith('Bearer ')) {
-        token = token.slice(7); // ✅ Remove "Bearer " prefix
+        token = token.slice(7); // Remove "Bearer " prefix
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('✅ Decoded Token:', decoded); // ✅ Log decoded token
+        console.log('✅ Decoded Token:', decoded); // Log decoded token
 
-        // Ensure is_admin is assigned properly
+        // Ensure is_admin is explicitly boolean
         req.user = {
             id: decoded.id,
             email: decoded.email,
-            is_admin: decoded.is_admin || false // Ensure it's explicitly boolean
+            is_admin: decoded.is_admin || false
         };
 
-        console.log('✅ User set in req.user:', req.user); // ✅ Confirm assignment
+        console.log('✅ User set in req.user:', req.user); // Confirm assignment
         next();
     } catch (error) {
         console.error('❌ JWT Verification Error:', error);
@@ -33,11 +33,9 @@ const authenticate = (req, res, next) => {
     }
 };
 
-const isAdmin = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
     if (!req.user || !req.user.is_admin) {
         return res.status(403).json({ error: 'Admin access required' });
     }
     next();
 };
-
-module.exports = { authenticate, isAdmin };

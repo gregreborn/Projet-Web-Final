@@ -1,13 +1,13 @@
-const pool = require('../db');
+import pool from '../db.js';
 
 // ✅ Get All Tables
-async function getAllTables() {
+export async function getAllTables() {
     const result = await pool.query(`SELECT * FROM tables ORDER BY id`);
     return result.rows;
 }
 
 // ✅ Create a Table
-async function createTable(seats) {
+export async function createTable(seats) {
     const result = await pool.query(
         `INSERT INTO tables (seats) VALUES ($1) RETURNING *`,
         [seats]
@@ -16,7 +16,7 @@ async function createTable(seats) {
 }
 
 // ✅ Update a Table
-async function updateTable(id, updatedData) {
+export async function updateTable(id, updatedData) {
     const fields = [];
     const values = [];
     let idx = 1;
@@ -45,21 +45,13 @@ async function updateTable(id, updatedData) {
 }
 
 // ✅ Delete a Table
-async function deleteTable(id) {
+export async function deleteTable(id) {
     const result = await pool.query(`DELETE FROM tables WHERE id = $1`, [id]);
     return result.rowCount;
 }
 
 // ✅ Get Table by ID
-async function getTableById(id) {
+export async function getTableById(id) {
     const result = await pool.query(`SELECT * FROM tables WHERE id = $1`, [id]);
     return result.rows[0];
 }
-
-module.exports = {
-    getAllTables,
-    createTable,
-    updateTable,
-    deleteTable,
-    getTableById
-};
