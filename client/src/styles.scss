@@ -1,1 +1,109 @@
-/* You can add global styles to this file, and also import other style files */
+// Custom Global Styles
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+
+  &:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.container {
+  padding: 1.5rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.navbar {
+  padding: 1rem;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.nav-link {
+  margin-left: 1rem;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #f8f9fa !important;
+  }
+
+  &.active {
+    color: #ffc107 !important;
+  }
+}
+
+.navbar-toggler {
+  border: none;
+}
+
+.client-item {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background-color: #fff;
+}
+
+input,
+select {
+  transition: border-color 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+}
+
+input:focus,
+select:focus {
+  border-color: #28a745;
+  box-shadow: 0 0 5px rgba(40, 167, 69, 0.4);
+}
+
+.alert {
+  padding: 1rem;
+  border-radius: 6px;
+}
+
+.btn {
+  transition: all 0.3s ease;
+}
+
+.navbar {
+  padding: 1rem;
+}
+
+.navbar-nav {
+  gap: 1rem;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    gap: 0.5rem;
+  }
+}

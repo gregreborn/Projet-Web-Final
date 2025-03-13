@@ -1,31 +1,66 @@
-<div class="dashboard">
-  <h1>Tableau de bord</h1>
+<div class="container mt-5">
+  <h1 class="display-4 text-center mb-4">Tableau de Bord</h1>
 
-  <div *ngIf="isAdmin; else userDashboard">
-    <h2>Admin Dashboard</h2>
-    <p>📌 Nombre total de clients : {{ totalClients }}</p>
-    <p>📌 Nombre total de réservations : {{ totalReservations }}</p>
+  <!-- Admin Dashboard -->
+  <div *ngIf="isAdmin; else userDashboard" class="admin-dashboard">
+    <h2 class="text-primary mb-3">Admin Dashboard</h2>
 
-    <button routerLink="/tables" class="btn btn-secondary">Gérer les tables</button>
-    <button routerLink="/reservations" class="btn btn-warning">Gérer les réservations</button>
+    <div class="card mb-4 p-3">
+      <p>📌 <strong>Nombre total de clients :</strong> {{ totalClients }}</p>
+      <p>📌 <strong>Nombre total de réservations :</strong> {{ totalReservations }}</p>
+    </div>
 
-    <h3>Liste des Clients</h3>
-    <button class="btn btn-success mb-3" (click)="openClientForm()">Créer un Client</button>
+    <div class="d-flex gap-3 mb-4">
+      <button routerLink="/tables" class="btn btn-outline-secondary w-100">
+        <i class="fas fa-chair"></i> Gérer les Tables
+      </button>
+      <button routerLink="/reservations" class="btn btn-outline-warning w-100">
+        <i class="fas fa-calendar-alt"></i> Gérer les Réservations
+      </button>
+    </div>
 
-    <div *ngFor="let client of clients" class="client-item">
-      <p>{{ client.name }} ({{ client.email }})</p>
+    <h3 class="text-secondary mt-4">Liste des Clients</h3>
 
-      <button class="btn btn-primary" (click)="createReservationForClient(client)">Créer une Réservation</button>
-      <button class="btn btn-warning" (click)="editClient(client)">Modifier</button>
-      <button class="btn btn-danger" (click)="deleteClient(client.id)">Supprimer</button>
+    <button class="btn btn-success mb-3" (click)="openClientForm()">
+      <i class="fas fa-user-plus"></i> Créer un Client
+    </button>
+
+    <div *ngFor="let client of clients" class="card mb-3 p-3 shadow-sm">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <p class="mb-1"><strong>{{ client.name }}</strong></p>
+          <p class="text-muted">{{ client.email }}</p>
+        </div>
+        <div class="btn-group gap-2">
+          <button class="btn btn-primary" (click)="createReservationForClient(client)">
+            <i class="fas fa-plus"></i> Réservation
+          </button>
+          <button class="btn btn-warning" (click)="editClient(client)">
+            <i class="fas fa-edit"></i> Modifier
+          </button>
+          <button class="btn btn-danger" (click)="deleteClient(client.id)">
+            <i class="fas fa-trash"></i> Supprimer
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
+  <!-- User Dashboard -->
   <ng-template #userDashboard>
-    <h2>Client Dashboard</h2>
-    <p>📌 Nombre de vos réservations à venir : {{ totalReservations }}</p>
+    <h2 class="text-primary mb-3">Client Dashboard</h2>
 
-    <button routerLink="/reservations" class="btn btn-primary">Voir mes réservations</button>
-    <button routerLink="/profile" class="btn btn-secondary">Modifier mon profil</button>
+    <div class="card mb-4 p-3">
+      <p>📌 <strong>Vos réservations à venir :</strong> {{ totalReservations }}</p>
+    </div>
+
+    <div class="d-flex gap-3">
+      <button routerLink="/reservations" class="btn btn-outline-primary w-100">
+        <i class="fas fa-calendar-check"></i> Voir mes Réservations
+      </button>
+      <button routerLink="/profile" class="btn btn-outline-secondary w-100">
+        <i class="fas fa-user-cog"></i> Modifier mon Profil
+      </button>
+    </div>
   </ng-template>
 </div>

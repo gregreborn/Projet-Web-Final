@@ -1,19 +1,22 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ReservationService } from '../services/reservation.service';
 import { ClientService } from '../services/client.service';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
-import { NgIf } from '@angular/common';
+import { NgClass, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-reservation-form',
   templateUrl: './reservation-form.component.html',
+  styleUrls: ['./reservation-form.component.scss'],
+  standalone: true, // Mark as standalone component
   imports: [
     ReactiveFormsModule,
-    NgIf
+    FormsModule,
+    NgIf,
+    NgClass
   ],
-  styleUrls: ['./reservation-form.component.scss']
 })
 export class ReservationFormComponent implements OnInit {
   reservationForm: FormGroup;
@@ -39,6 +42,7 @@ export class ReservationFormComponent implements OnInit {
     });
   }
 
+
   ngOnInit(): void {
     const state = history.state;
     const currentUser = this.authService.getCurrentUser();
@@ -52,7 +56,6 @@ export class ReservationFormComponent implements OnInit {
       this.isEditMode = true;
       this.reservationId = state.reservation.id;
 
-      // ✅ Ensure `selectedClient` is set when modifying
       this.selectedClient = {
         id: state.reservation.client_id,
         name: state.reservation.client_name,
@@ -67,6 +70,20 @@ export class ReservationFormComponent implements OnInit {
         numPeople: state.reservation.num_people
       });
     }
+  }
+
+
+  // ✅ Getters for Form Controls
+  get date() {
+    return this.reservationForm.get('date');
+  }
+
+  get timeSlot() {
+    return this.reservationForm.get('timeSlot');
+  }
+
+  get numPeople() {
+    return this.reservationForm.get('numPeople');
   }
 
 
@@ -119,7 +136,6 @@ export class ReservationFormComponent implements OnInit {
   }
 
 
-
   private updateReservation(reservationId: number, numPeople: number, datetime: string): void {
     this.reservationService.updateReservation(reservationId, {
       datetime: datetime,
@@ -127,13 +143,18 @@ export class ReservationFormComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.successMessage = '✅ Réservation mise à jour!';
-        // ✅ Redirect to the reservations page instead of dashboard
         setTimeout(() => this.router.navigate(['/reservations']), 2000);
       },
       error: (error: { error: { message: string; }; }) => {
         this.errorMessage = error.error.message || 'Erreur lors de la mise à jour de la réservation.';
       }
     });
+  }
+
+  // Helper method to check for control errors
+  hasError(controlName: string, errorName: string): boolean {
+    const control = this.reservationForm.get(controlName);
+    return control ? control.hasError(errorName) && (control.dirty || control.touched) : false;
   }
 
 }

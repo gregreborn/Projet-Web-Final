@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { TableService, Table } from '../services/table.service';
-import {Router, RouterLink} from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgForOf, NgIf } from '@angular/common';
 
@@ -10,12 +10,13 @@ import { NgForOf, NgIf } from '@angular/common';
   imports: [
     FormsModule,
     NgForOf,
-    RouterLink,
+    NgIf,
   ],
   styleUrls: ['./tables.component.scss']
 })
 export class TablesComponent implements OnInit {
   tables: Table[] = [];
+  newTable: Partial<Table> = { seats: 0 }; // ✅ Initialized newTable
 
   constructor(private tableService: TableService, private router: Router) {}
 
@@ -42,7 +43,14 @@ export class TablesComponent implements OnInit {
   }
 
   createTable(): void {
-    this.router.navigate(['/tables/form']);
-  }
+    if (!this.newTable.seats || this.newTable.seats <= 0) {
+      alert('Veuillez entrer un nombre valide de sièges.');
+      return;
+    }
 
+    this.tableService.createTable({ seats: this.newTable.seats }).subscribe(() => {
+      this.loadTables();
+      this.newTable.seats = 0; // ✅ Reset the form after creation
+    });
+  }
 }

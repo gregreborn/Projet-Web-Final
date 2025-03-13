@@ -1,27 +1,40 @@
-<div class="reservations-list">
-  <h2>Liste des Réservations</h2>
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">Liste des Réservations</h2>
 
   <!-- Search Bar -->
-  <input type="text" class="form-control mb-3"
-         placeholder="Rechercher par nom ou date..."
-         [(ngModel)]="searchQuery"
-         (keyup.enter)="triggerSearch()">
-
-  <button class="btn btn-primary mb-3" (click)="triggerSearch()">Rechercher</button>
-
-  <div *ngIf="filteredReservations.length === 0">
-    <p>Aucune réservation trouvée.</p>
+  <div class="input-group mb-4">
+    <input type="text"
+           class="form-control"
+           placeholder="Rechercher par nom ou date..."
+           [(ngModel)]="searchQuery"
+           (keyup.enter)="triggerSearch()">
+    <button class="btn btn-primary" (click)="triggerSearch()">Rechercher</button>
   </div>
 
-  <div *ngFor="let reservation of filteredReservations" class="reservation-item">
-    <p>
-      📅 <strong>Jour:</strong> {{ formatDate(reservation.datetime) }}<br>
-      🕒 <strong>Créneau Horaire:</strong> {{ getTimeSlot(reservation.datetime) }}<br>
-      👥 <strong>Nombre de personnes:</strong> {{ reservation.num_people }}<br>
-      👤 <strong>Client:</strong> {{ reservation.client_name }}
-    </p>
+  <!-- No Reservations Found -->
+  <div *ngIf="filteredReservations.length === 0" class="alert alert-warning text-center">
+    Aucune réservation trouvée.
+  </div>
 
-    <button class="btn btn-primary" (click)="openReservationForm(reservation)">Modifier</button>
-    <button class="btn btn-danger" (click)="deleteReservation(reservation.id)">Supprimer</button>
+  <!-- Reservations List -->
+  <div *ngFor="let reservation of filteredReservations" class="card p-3 mb-3 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <p class="mb-1"><i class="fa fa-calendar-alt me-2"></i><strong>Jour:</strong> {{ formatDate(reservation.datetime) }}</p>
+        <p class="mb-1"><i class="fa fa-clock me-2"></i><strong>Créneau Horaire:</strong> {{ getTimeSlot(reservation.datetime) }}</p>
+        <p class="mb-1"><i class="fa fa-users me-2"></i><strong>Nombre de personnes:</strong> {{ reservation.num_people }}</p>
+        <p class="mb-1"><i class="fa fa-user me-2"></i><strong>Client:</strong> {{ reservation.client_name }}</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex gap-2">
+        <button class="btn btn-warning btn-sm" (click)="openReservationForm(reservation)">
+          <i class="fa fa-edit"></i> Modifier
+        </button>
+        <button class="btn btn-danger btn-sm" (click)="deleteReservation(reservation.id)">
+          <i class="fa fa-trash"></i> Supprimer
+        </button>
+      </div>
+    </div>
   </div>
 </div>
