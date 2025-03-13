@@ -69,12 +69,10 @@
       <button
         type="submit"
         class="btn btn-success w-100 py-2"
-        [disabled]="
-          !reservationForm.valid ||
-          (!isAdmin && !authService.getCurrentUser()?.id) ||
-          (isAdmin && !selectedClient?.id)">
+        [disabled]="!reservationForm.valid">
         {{ isEditMode ? 'Mettre à Jour' : 'Créer' }}
       </button>
+
 
     </form>
   </div>

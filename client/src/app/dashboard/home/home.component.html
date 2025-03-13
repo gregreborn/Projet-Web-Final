@@ -1,12 +1,7 @@
 <div class="container">
   <h1>Bienvenue au Restaurant</h1>
   <p>Réservez votre table en quelques clics.</p>
-
-  <a *ngIf="authService.getCurrentUser()" routerLink="/reservations/form" class="btn btn-primary">
+  <a routerLink="/reservations/form" class="btn btn-primary">
     Réserver une table
-  </a>
-
-  <a *ngIf="!authService.getCurrentUser()" routerLink="/login" class="btn btn-secondary">
-    Se connecter
   </a>
 </div>

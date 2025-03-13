@@ -19,6 +19,11 @@ export class RegisterComponent {
 
   constructor(private authService: AuthService, private router: Router) {}
 
+  ngOnInit(): void {
+    const state = history.state;
+    console.log('Incoming State:', state);
+  }
+
   register(): void {
     if (!this.name || !this.email || !this.password) {
       this.errorMessage = 'All fields are required!';
@@ -27,13 +32,31 @@ export class RegisterComponent {
 
     this.authService.register({ name: this.name, email: this.email, password: this.password }).subscribe({
       next: () => {
-        this.router.navigate(['/login']);
+        // Automatically log in after registration
+        this.authService.login({ email: this.email, password: this.password }).subscribe({
+          next: (response) => {
+            this.authService.saveToken(response.token);
+
+            const state = history.state;
+
+            // Redirect to reservation form if reservation data exists
+            if (state && state.reservation) {
+              this.router.navigate(['/reservations/form'], { state: { reservation: state.reservation } });
+            } else {
+              this.router.navigate(['/dashboard']);
+            }
+          },
+          error: (err) => {
+            console.error('Auto-login after registration failed:', err);
+            this.errorMessage = 'Auto-login failed. Please try logging in manually.';
+          }
+        });
       },
       error: (err) => {
         console.error('Registration failed:', err);
         this.errorMessage = err.error?.error || 'Something went wrong. Please try again.';
       }
     });
-
   }
+
 }

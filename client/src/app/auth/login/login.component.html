@@ -11,9 +11,13 @@
 
   <button type="submit" class="btn btn-primary">Login</button>
 
-  <div class="mt-2">
-    <a routerLink="/register">Don't have an account? Register</a>
-  </div>
+  <p class="mt-3 text-center">
+    Pas de compte ?
+    <a [routerLink]="['/register']" [state]="{ reservation: history.state?.reservation }">
+      Créer un compte
+    </a>
+  </p>
+
 
   <div *ngIf="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
 </form>

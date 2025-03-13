@@ -53,24 +53,27 @@ export class ReservationFormComponent implements OnInit {
     }
 
     if (state.reservation) {
-      this.isEditMode = true;
-      this.reservationId = state.reservation.id;
-
-      this.selectedClient = {
-        id: state.reservation.client_id,
-        name: state.reservation.client_name,
-        email: state.reservation.email
-      };
-
-      const [date, time] = state.reservation.datetime.split('T');
-
+      // Patch form with the passed reservation state
       this.reservationForm.patchValue({
-        date: date,
-        timeSlot: time.substring(0, 5),
-        numPeople: state.reservation.num_people
+        date: state.reservation.date,
+        timeSlot: state.reservation.timeSlot,
+        numPeople: state.reservation.numPeople
       });
+
+      // Automatically confirm reservation if user is now logged in
+      if (currentUser?.id && !this.isEditMode) {
+        const { date, timeSlot, numPeople } = state.reservation;
+        const datetime = `${date}T${timeSlot}:00Z`;
+        this.createReservation(currentUser.id, numPeople, datetime);
+      }
+
+      if (state.reservation.id) {
+        this.isEditMode = true;
+        this.reservationId = state.reservation.id;
+      }
     }
   }
+
 
 
   // ✅ Getters for Form Controls
@@ -102,7 +105,8 @@ export class ReservationFormComponent implements OnInit {
     const clientId = this.isAdmin ? this.selectedClient?.id : this.authService.getCurrentUser()?.id;
 
     if (!clientId) {
-      this.errorMessage = 'Client ID is missing.';
+      // Redirect to login and pass reservation data in the state
+      this.router.navigate(['/login'], { state: { reservation: { date, timeSlot, numPeople } } });
       return;
     }
 
@@ -112,7 +116,6 @@ export class ReservationFormComponent implements OnInit {
       this.createReservation(clientId, numPeople, datetime);
     }
   }
-
 
 
 

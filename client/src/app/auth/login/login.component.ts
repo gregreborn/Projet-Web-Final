@@ -27,7 +27,15 @@ export class LoginComponent {
     this.authService.login({ email: this.email, password: this.password }).subscribe({
       next: (response) => {
         this.authService.saveToken(response.token);
-        this.router.navigate(['/reservations']);
+
+        const state = history.state;
+
+        // If reservation data exists, redirect to reservation form
+        if (state && state.reservation) {
+          this.router.navigate(['/reservations/form'], { state: { reservation: state.reservation } });
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
       },
       error: (err) => {
         console.error('Login failed:', err);
@@ -35,4 +43,7 @@ export class LoginComponent {
       }
     });
   }
+
+
+  protected readonly history = history;
 }
