@@ -11,35 +11,42 @@ exports.getTables = async (req, res) => {
     }
 };
 
-// Create a table
+// ✅ Create a table (No seat limit for Admin)
 exports.createTable = async (req, res) => {
     const { seats } = req.body;
-    if (!seats || seats < 2 || seats > 6) {
-        return res.status(400).json({ error: 'Seats must be between 2 and 6' });
+
+    if (!seats || seats < 1) {
+        return res.status(400).json({ error: 'Le nombre de sièges doit être supérieur à zéro.' });
     }
 
     try {
         const table = await Tables.createTable(seats);
+        console.log('✅ Table created:', table);
         res.status(201).json(table);
     } catch (error) {
+        console.error('❌ Error creating table:', error);
         res.status(500).json({ error: error.message });
     }
 };
 
-// Update a table
+// ✅ Update a table (No seat limit for Admin)
 exports.updateTable = async (req, res) => {
     const { id } = req.params;
-    const { seats } = req.body;
+    const updatedData = req.body;
+
+    if (updatedData.seats && updatedData.seats < 1) {
+        return res.status(400).json({ error: 'Le nombre de sièges doit être supérieur à zéro.' });
+    }
 
     try {
-        const updatedTable = await Tables.updateTable(id, seats);
+        const updatedTable = await Tables.updateTable(id, updatedData);
         res.json(updatedTable);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-// Delete a table
+// ✅ Delete a table
 exports.deleteTable = async (req, res) => {
     const { id } = req.params;
 

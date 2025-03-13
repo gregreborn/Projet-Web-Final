@@ -110,7 +110,6 @@ const createReservation = async (client_id, num_people, datetime) => {
 };
 
 // Reassign reservations for a given time slot if a more optimal table becomes available (iterative version)
-// Reassign reservations for a given time slot if a more optimal (strictly smaller) table becomes available
 const reassignReservationsForTimeSlot = async (datetime) => {
     // Convert to string if necessary
     const datetimeStr = (datetime instanceof Date) ? datetime.toISOString() : datetime;

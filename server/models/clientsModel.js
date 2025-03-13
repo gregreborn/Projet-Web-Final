@@ -51,8 +51,8 @@ async function updateClient(id, updatedData) {
         values.push(updatedData.name);
         idx++;
     }
+
     if (updatedData.email) {
-        // 🔍 First, check if the email already exists (excluding the current user)
         const emailCheck = await pool.query(
             `SELECT id FROM clients WHERE email = $1 AND id != $2`,
             [updatedData.email, id]
@@ -66,10 +66,17 @@ async function updateClient(id, updatedData) {
         values.push(updatedData.email);
         idx++;
     }
+
     if (updatedData.password) {
         const hashedPassword = await bcrypt.hash(updatedData.password, 10);
         fields.push(`password = $${idx}`);
         values.push(hashedPassword);
+        idx++;
+    }
+
+    if (updatedData.is_admin !== undefined) {
+        fields.push(`is_admin = $${idx}`);
+        values.push(updatedData.is_admin);
         idx++;
     }
 
@@ -84,6 +91,7 @@ async function updateClient(id, updatedData) {
 }
 
 
+
 // Récupérer la liste de tous les clients (pour l'admin)
 async function getAllClients() {
     const result = await pool.query(
@@ -91,6 +99,28 @@ async function getAllClients() {
     );
     return result.rows;
 }
+
+// ✅ Create a new client
+async function createClient(name, email, password, is_admin = false) {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const result = await pool.query(
+        `INSERT INTO clients (name, email, password, is_admin)
+         VALUES ($1, $2, $3, $4) RETURNING id, name, email, is_admin`,
+        [name, email, hashedPassword, is_admin]
+    );
+    return result.rows[0];
+}
+
+// ✅ Check if email already exists
+async function getClientByEmail(email) {
+    const result = await pool.query(
+        `SELECT * FROM clients WHERE email = $1`,
+        [email]
+    );
+    return result.rows[0];
+}
+
+
 
 // Supprimer un client (pour l'admin)
 async function deleteClient(id) {
@@ -101,11 +131,14 @@ async function deleteClient(id) {
     return result.rowCount;
 }
 
+
 module.exports = {
     registerClient,
     loginClient,
     getClientById,
     updateClient,
     getAllClients,
-    deleteClient
+    deleteClient,
+    createClient,
+    getClientByEmail
 };

@@ -206,6 +206,38 @@ router.post('/change-password', authenticate, async (req, res) => {
     }
 });
 
+// ✅ Admin: Create a new client
+router.post('/', authenticate, isAdmin, async (req, res) => {
+    const { name, email, password, is_admin } = req.body;
+
+    console.log('🛠️ Incoming is_admin:', is_admin); // ✅ Log the incoming value
+
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Nom, email et mot de passe sont requis.' });
+    }
+
+    if (password.length < 6) {
+        return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères.' });
+    }
+
+    try {
+        const existingClient = await Clients.getClientByEmail(email);
+        if (existingClient) {
+            return res.status(400).json({ error: 'Cet email est déjà utilisé.' });
+        }
+
+        // ✅ Ensure boolean value is correctly processed
+        const adminStatus = is_admin === true || is_admin === 'true';
+
+        const newClient = await Clients.createClient(name, email, password, adminStatus);
+        res.status(201).json(newClient);
+
+    } catch (error) {
+        console.error('Erreur lors de la création du client:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 
 module.exports = router;

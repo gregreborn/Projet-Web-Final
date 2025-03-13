@@ -7,7 +7,8 @@ import { ReservationFormComponent } from './reservations/reservation-form.compon
 import { ProfileComponent } from './profile/profile.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ClientFormComponent } from './clients/client-form.component';  // ✅ Import Client Form
-
+import { TablesComponent } from './tables/tables.component';
+import { TableFormComponent } from './tables/table-form.component';
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
@@ -22,7 +23,8 @@ export const routes: Routes = [
   // ✅ Client CRUD Routes
   { path: 'clients/form', component: ClientFormComponent },           // Create Client
   { path: 'clients/form/:id', component: ClientFormComponent },       // Edit Client
-
+  { path: 'tables', component: TablesComponent },
+  { path: 'tables/form', component: TableFormComponent },
   { path: 'dashboard', component: DashboardComponent },
 
   // ✅ Wildcard to redirect to dashboard

@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS clients (
 -- Création de la table tables avec les règles de capacité
 CREATE TABLE IF NOT EXISTS tables (
                                       id SERIAL PRIMARY KEY,
-                                      seats INTEGER NOT NULL CHECK (seats >= 2 AND seats <= 6)
+                                      seats INTEGER NOT NULL CHECK (seats >= 1)
 );
 
 -- Création de la table reservations avec num_people

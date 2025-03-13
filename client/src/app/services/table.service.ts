@@ -11,7 +11,7 @@ export interface Table {
   providedIn: 'root'
 })
 export class TableService {
-  private apiUrl = 'http://localhost:5000/api/tables';
+  private apiUrl = 'http://localhost:5000/api/tables'; // Ensure this is correct
 
   constructor(private http: HttpClient) {}
 
@@ -27,15 +27,16 @@ export class TableService {
     return this.http.get<Table[]>(this.apiUrl, { headers: this.getHeaders() });
   }
 
-  createTable(data: { seats: number }): Observable<Table> {
-    return this.http.post<Table>(this.apiUrl, data, { headers: this.getHeaders() });
+  createTable(table: { seats: number }): Observable<Table> {
+    return this.http.post<Table>(this.apiUrl, table, { headers: this.getHeaders() });
   }
 
-  updateTable(id: number, data: { seats: number }): Observable<Table> {
-    return this.http.put<Table>(`${this.apiUrl}/${id}`, data, { headers: this.getHeaders() });
+
+  updateTable(id: number, updatedData: Partial<Table>): Observable<Table> {
+    return this.http.put<Table>(`${this.apiUrl}/${id}`, updatedData, { headers: this.getHeaders() });
   }
 
-  deleteTable(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
+  deleteTable(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 }

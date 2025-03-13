@@ -1,8 +1,8 @@
-// tables.component.ts
 import { Component, OnInit } from '@angular/core';
 import { TableService, Table } from '../services/table.service';
-import {FormsModule} from '@angular/forms';
-import {NgForOf, NgIf} from '@angular/common';
+import {Router, RouterLink} from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { NgForOf, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-tables',
@@ -10,17 +10,14 @@ import {NgForOf, NgIf} from '@angular/common';
   imports: [
     FormsModule,
     NgForOf,
-    NgIf
+    RouterLink,
   ],
   styleUrls: ['./tables.component.scss']
 })
 export class TablesComponent implements OnInit {
   tables: Table[] = [];
-  newSeats: number = 2;
-  editTableId: number | null = null;
-  editSeats: number = 2;
 
-  constructor(private tableService: TableService) {}
+  constructor(private tableService: TableService, private router: Router) {}
 
   ngOnInit(): void {
     this.loadTables();
@@ -32,28 +29,8 @@ export class TablesComponent implements OnInit {
     });
   }
 
-  createTable(): void {
-    if (this.newSeats < 2 || this.newSeats > 6) {
-      alert('Seats must be between 2 and 6');
-      return;
-    }
-    this.tableService.createTable({ seats: this.newSeats }).subscribe(() => {
-      this.loadTables();
-      this.newSeats = 2;
-    });
-  }
-
-  updateTable(): void {
-    if (this.editSeats < 2 || this.editSeats > 6) {
-      alert('Seats must be between 2 and 6');
-      return;
-    }
-    if (this.editTableId !== null) {
-      this.tableService.updateTable(this.editTableId, { seats: this.editSeats }).subscribe(() => {
-        this.loadTables();
-        this.editTableId = null;
-      });
-    }
+  editTable(table: Table): void {
+    this.router.navigate(['/tables/form'], { state: { table } });
   }
 
   deleteTable(id: number): void {
@@ -64,8 +41,8 @@ export class TablesComponent implements OnInit {
     }
   }
 
-  startEdit(table: Table): void {
-    this.editTableId = table.id;
-    this.editSeats = table.seats;
+  createTable(): void {
+    this.router.navigate(['/tables/form']);
   }
+
 }
