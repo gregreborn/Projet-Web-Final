@@ -2,10 +2,10 @@
   <h1 class="display-4 text-center mb-4">Tableau de Bord</h1>
 
   <!-- Admin Dashboard -->
-  <div *ngIf="isAdmin; else userDashboard" class="admin-dashboard">
-    <h2 class="text-primary mb-3">Admin Dashboard</h2>
+  <div *ngIf="isAdmin; else userDashboard">
+    <h2 class="text-primary mb-3">Dashboard Admin</h2>
 
-    <div class="card mb-4 p-3">
+    <div class="card mb-4 p-3 shadow">
       <p>📌 <strong>Nombre total de clients :</strong> {{ totalClients }}</p>
       <p>📌 <strong>Nombre total de réservations :</strong> {{ totalReservations }}</p>
     </div>
@@ -19,27 +19,28 @@
       </button>
     </div>
 
-    <h3 class="text-secondary mt-4">Liste des Clients</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="text-secondary">Liste des Clients</h3>
+      <button class="btn btn-success" (click)="openClientForm()">
+        <i class="fas fa-user-plus"></i> Ajouter Client
+      </button>
+    </div>
 
-    <button class="btn btn-success mb-3" (click)="openClientForm()">
-      <i class="fas fa-user-plus"></i> Créer un Client
-    </button>
-
-    <div *ngFor="let client of clients" class="card mb-3 p-3 shadow-sm">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <p class="mb-1"><strong>{{ client.name }}</strong></p>
+    <div *ngFor="let client of clients" class="card mb-3 shadow-sm p-3">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h5>{{ client.name }}</h5>
           <p class="text-muted">{{ client.email }}</p>
         </div>
-        <div class="btn-group gap-2">
-          <button class="btn btn-primary" (click)="createReservationForClient(client)">
-            <i class="fas fa-plus"></i> Réservation
+        <div class="col-md-4 text-end">
+          <button class="btn btn-sm btn-primary me-1" (click)="createReservationForClient(client)">
+            <i class="fas fa-plus"></i>
           </button>
-          <button class="btn btn-warning" (click)="editClient(client)">
-            <i class="fas fa-edit"></i> Modifier
+          <button class="btn btn-sm btn-warning me-1" (click)="editClient(client)">
+            <i class="fas fa-edit"></i>
           </button>
-          <button class="btn btn-danger" (click)="deleteClient(client.id)">
-            <i class="fas fa-trash"></i> Supprimer
+          <button class="btn btn-sm btn-danger" (click)="deleteClient(client.id)">
+            <i class="fas fa-trash"></i>
           </button>
         </div>
       </div>
@@ -48,18 +49,18 @@
 
   <!-- User Dashboard -->
   <ng-template #userDashboard>
-    <h2 class="text-primary mb-3">Client Dashboard</h2>
+    <h2 class="text-primary mb-3">Dashboard Client</h2>
 
-    <div class="card mb-4 p-3">
+    <div class="card mb-4 p-3 shadow">
       <p>📌 <strong>Vos réservations à venir :</strong> {{ totalReservations }}</p>
     </div>
 
     <div class="d-flex gap-3">
       <button routerLink="/reservations" class="btn btn-outline-primary w-100">
-        <i class="fas fa-calendar-check"></i> Voir mes Réservations
+        <i class="fas fa-calendar-check"></i> Voir Réservations
       </button>
       <button routerLink="/profile" class="btn btn-outline-secondary w-100">
-        <i class="fas fa-user-cog"></i> Modifier mon Profil
+        <i class="fas fa-user-cog"></i> Modifier Profil
       </button>
     </div>
   </ng-template>

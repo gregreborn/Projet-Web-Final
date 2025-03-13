@@ -2,18 +2,20 @@ import { Router, RouterModule } from '@angular/router';
 import { NgIf } from '@angular/common';
 import { Component, OnInit, NgZone } from '@angular/core';
 import { AuthService } from './services/auth.service';
+import {NgbCollapse} from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
-  imports: [RouterModule, NgIf]
+  imports: [RouterModule, NgIf, NgbCollapse]
 })
 export class AppComponent implements OnInit {
   title = 'Projet-Web-Final';
   isLoggedIn = false;
   isAdmin = false;
+  isCollapsed = true;
 
   constructor(private authService: AuthService, private router: Router, private ngZone: NgZone) {}
 

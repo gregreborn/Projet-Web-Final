@@ -1,40 +1,43 @@
-<form [formGroup]="clientForm" (ngSubmit)="submitClient()">
+<form [formGroup]="clientForm" (ngSubmit)="submitClient()" class="container mt-4 card p-4">
 
+  <h2 class="mb-3">{{ isEditMode ? 'Modifier le Client' : 'Ajouter un Client' }}</h2>
+
+  <!-- Error Message -->
   <div *ngIf="errorMessage" class="alert alert-danger">
     {{ errorMessage }}
   </div>
 
-  <div *ngIf="successMessage" class="alert alert-success">
-    {{ successMessage }}
+  <!-- Name -->
+  <div class="mb-3">
+    <label class="form-label">Nom</label>
+    <input type="text" class="form-control" formControlName="name">
   </div>
 
-  <div class="form-group">
-    <label for="name">Nom:</label>
-    <input type="text" id="name" class="form-control" formControlName="name" required>
+  <div class="mb-3">
+    <label class="form-label">Email</label>
+    <input type="email" class="form-control" formControlName="email">
   </div>
 
-  <div class="form-group">
-    <label for="email">Email:</label>
-    <input type="email" id="email" class="form-control" formControlName="email" required>
+  <!-- Show Password fields only in creation mode -->
+  <div *ngIf="!isEditMode" class="mb-3">
+    <label class="form-label">Mot de Passe</label>
+    <input type="password" class="form-control" formControlName="password">
   </div>
 
-  <div *ngIf="!isEditMode" class="form-group">
-    <label for="password">Mot de Passe:</label>
-    <input type="password" id="password" class="form-control" formControlName="password" required>
+  <div *ngIf="!isEditMode" class="mb-3">
+    <label class="form-label">Confirmer Mot de Passe</label>
+    <input type="password" class="form-control" formControlName="confirmPassword">
   </div>
 
-  <div *ngIf="!isEditMode" class="form-group">
-    <label for="confirmPassword">Confirmer le Mot de Passe:</label>
-    <input type="password" id="confirmPassword" class="form-control" formControlName="confirmPassword" required>
+  <!-- Checkbox for admin (optional if relevant) -->
+  <div class="form-check form-switch mb-3">
+    <input type="checkbox" class="form-check-input" id="is_admin" formControlName="is_admin">
+    <label class="form-check-label" for="is_admin">Admin</label>
   </div>
 
-  <div class="form-group form-check">
-    <input type="checkbox" id="is_admin" class="form-check-input" formControlName="is_admin">
-    <label for="is_admin" class="form-check-label">Est Admin</label>
-  </div>
-
-  <button type="submit" class="btn btn-primary" [disabled]="!clientForm.valid">
+  <button type="submit" class="btn btn-primary w-100" [disabled]="clientForm.invalid">
     {{ isEditMode ? 'Mettre à Jour' : 'Créer' }}
   </button>
 
+  <div *ngIf="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
 </form>

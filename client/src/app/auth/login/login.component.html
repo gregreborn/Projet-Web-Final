@@ -1,12 +1,19 @@
-<form (ngSubmit)="login()"> <!-- ✅ Fix submit issue -->
-  <label>Email</label>
-  <input type="email" [(ngModel)]="email" name="email" required /> <!-- ✅ Add name -->
+<form (ngSubmit)="login()" class="container mt-4">
+  <div class="mb-3">
+    <label class="form-label">Email</label>
+    <input type="email" class="form-control" [(ngModel)]="email" name="email" required>
+  </div>
 
-  <label>Password</label>
-  <input type="password" [(ngModel)]="password" name="password" required /> <!-- ✅ Add name -->
+  <div class="mb-3">
+    <label class="form-label">Password</label>
+    <input type="password" class="form-control" [(ngModel)]="password" name="password" required />
+  </div>
 
-  <button type="submit">Login</button>
+  <button type="submit" class="btn btn-primary">Login</button>
+
+  <div class="mt-2">
+    <a routerLink="/register">Don't have an account? Register</a>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger mt-3">{{ errorMessage }}</div>
 </form>
-
-<p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
-<p>Don't have an account? <a routerLink="/register">Register</a></p> <!-- ✅ Fix navigation -->
