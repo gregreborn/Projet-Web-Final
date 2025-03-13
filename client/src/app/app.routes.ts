@@ -6,27 +6,33 @@ import { ReservationsComponent } from './reservations/reservations.component';
 import { ReservationFormComponent } from './reservations/reservation-form.component';
 import { ProfileComponent } from './profile/profile.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { ClientFormComponent } from './clients/client-form.component';  // ✅ Import Client Form
+import { ClientFormComponent } from './clients/client-form.component';
 import { TablesComponent } from './tables/tables.component';
 import { TableFormComponent } from './tables/table-form.component';
+import { AuthGuard } from './auth/auth.guard';
+
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'profile', component: ProfileComponent },
 
-  // ✅ Reservation Routes
-  { path: 'reservations', component: ReservationsComponent },
-  { path: 'reservations/form', component: ReservationFormComponent },
+  // Exemple de protection d'une route (accès uniquement si connecté)
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
 
-  // ✅ Client CRUD Routes
-  { path: 'clients/form', component: ClientFormComponent },           // Create Client
-  { path: 'clients/form/:id', component: ClientFormComponent },       // Edit Client
-  { path: 'tables', component: TablesComponent },
-  { path: 'tables/form', component: TableFormComponent },
-  { path: 'dashboard', component: DashboardComponent },
+  // Routes de réservation
+  { path: 'reservations', component: ReservationsComponent, canActivate: [AuthGuard] },
+  { path: 'reservations/form', component: ReservationFormComponent, canActivate: [AuthGuard] },
 
-  // ✅ Wildcard to redirect to dashboard
+  // Routes CRUD pour Clients (protection selon le besoin)
+  { path: 'clients/form', component: ClientFormComponent, canActivate: [AuthGuard] },
+  { path: 'clients/form/:id', component: ClientFormComponent, canActivate: [AuthGuard] },
+
+  { path: 'tables', component: TablesComponent, canActivate: [AuthGuard] },
+  { path: 'tables/form', component: TableFormComponent, canActivate: [AuthGuard] },
+
+  { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+
+  // Wildcard pour rediriger vers le dashboard ou la page de login
   { path: '**', redirectTo: 'dashboard' }
 ];
