@@ -22,31 +22,26 @@ export async function getReservations(req, res) {
 export async function createReservation(req, res) {
     const { client_id, num_people, datetime } = req.body;
 
-    if (!num_people || !datetime || (!client_id && req.user.is_admin)) {
+    if (!num_people || !datetime || (req.user.is_admin && !client_id)) {
         return res.status(400).json({ error: "Missing reservation data." });
     }
 
-    // Validate reservation time
     if (!validateServiceTime(datetime)) {
-        return res.status(400).json({ error: "Invalid service time for reservation." });
+        return res.status(400).json({ error: "Invalid reservation time." });
     }
 
-    try {
-        // Determine the correct client ID
-        const userId = req.user.is_admin ? client_id : req.user.id;
+    const clientId = req.user.is_admin ? client_id : req.user.id;
+    const reservationDate = datetime.split('T')[0];
 
-        // Prevent multiple reservations by the same client on the same day
-        const userReservations = await Reservations.getClientReservations(userId);
-        const dateOnly = datetime.split('T')[0];
-        const existingReservation = userReservations.find(res =>
-            new Date(res.datetime).toISOString().startsWith(dateOnly)
-        );
-        if (existingReservation) {
-            return res.status(400).json({ error: "You already have a reservation for this day." });
+    try {
+        // Directly check for reservations on that specific date
+        const existingReservations = await Reservations.getClientReservations(client_id, reservationDate);
+
+        if (existingReservations.some(res => res.datetime.startsWith(reservationDate))) {
+            return res.status(400).json({ error: "Vous avez déjà une réservation pour cette date." });
         }
 
-        // Create the reservation
-        const reservation = await Reservations.createReservation(userId, num_people, datetime);
+        const reservation = await Reservations.createReservation(client_id, num_people, datetime);
         res.status(201).json(reservation);
     } catch (error) {
         console.error("Error creating reservation:", error);
