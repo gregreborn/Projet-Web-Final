@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { ClientService } from '../services/client.service';
 import { ReservationService } from '../services/reservation.service';
-import {Router, RouterLink} from '@angular/router';
-import {NgForOf, NgIf} from '@angular/common';
+import { Router, RouterLink } from '@angular/router';
+import { NgForOf, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
@@ -38,6 +38,7 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  // Charge les informations de l'utilisateur connecté
   loadCurrentUser(): void {
     this.currentUser = this.authService.getCurrentUser();
     if (!this.currentUser) {
@@ -49,6 +50,7 @@ export class DashboardComponent implements OnInit {
     this.fetchDashboardData();
   }
 
+  // Charge les données spécifiques selon le type d'utilisateur (admin ou client)
   fetchDashboardData(): void {
     if (this.isAdmin) {
       this.loadAdminData();
@@ -57,6 +59,7 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  // Charge les données nécessaires au tableau de bord administrateur
   loadAdminData(): void {
     this.clientService.getClients().subscribe({
       next: (clients) => {
@@ -75,6 +78,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  // Charge la liste des clients pour l'administration
   loadClients(): void {
     this.clientService.getClients().subscribe({
       next: (clients) => {
@@ -84,6 +88,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  // Charge les réservations spécifiques au client connecté
   loadClientData(): void {
     this.reservationService.fetchReservations();
     this.reservationService.reservations$.subscribe({
@@ -95,22 +100,26 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  // Ouvre le formulaire pour créer ou éditer un client
   openClientForm(client?: any): void {
     this.router.navigate(['/clients/form'], { state: { client } });
   }
 
+  // Édite un client existant
   editClient(client: any): void {
     this.openClientForm(client);
   }
 
+  // Supprime un client après confirmation
   deleteClient(clientId: number): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce client ?')) {
       this.clientService.deleteClient(clientId).subscribe(() => {
-        this.loadClients(); // Refresh the list after deletion
+        this.loadClients(); // Rafraîchit la liste après suppression
       });
     }
   }
 
+  // Crée une réservation pour un client sélectionné
   createReservationForClient(client: any): void {
     this.router.navigate(['/reservations/form'], { state: { client } });
   }

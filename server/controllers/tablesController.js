@@ -1,7 +1,7 @@
 import * as Tables from '../models/tablesModel.js';
 import pool from '../db.js';
 
-// Get all tables
+// Récupère la liste de toutes les tables
 export async function getTables(req, res) {
     try {
         const tables = await Tables.getAllTables();
@@ -11,7 +11,7 @@ export async function getTables(req, res) {
     }
 }
 
-// Create a table (No seat limit for Admin)
+// Crée une nouvelle table (pas de limite de sièges pour l'administrateur)
 export async function createTable(req, res) {
     const { seats } = req.body;
     if (!seats || seats < 1) {
@@ -19,15 +19,15 @@ export async function createTable(req, res) {
     }
     try {
         const table = await Tables.createTable(seats);
-        console.log('✅ Table created:', table);
+        console.log('✅ Table créée :', table);
         res.status(201).json(table);
     } catch (error) {
-        console.error('❌ Error creating table:', error);
+        console.error('❌ Erreur lors de la création de la table :', error);
         res.status(500).json({ error: error.message });
     }
 }
 
-// Update a table (No seat limit for Admin)
+// Met à jour une table existante (pas de limite de sièges pour l'administrateur)
 export async function updateTable(req, res) {
     const { id } = req.params;
     const updatedData = req.body;
@@ -44,12 +44,12 @@ export async function updateTable(req, res) {
     }
 }
 
-// Delete a table
+// Supprime une table existante
 export async function deleteTable(req, res) {
     const { id } = req.params;
     try {
         await Tables.deleteTable(id);
-        res.json({ message: 'Table deleted successfully' });
+        res.json({ message: 'Table supprimée avec succès.' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -64,8 +64,6 @@ export async function initializeTables(req, res) {
         res.status(500).json({ error: 'Failed to initialize tables.' });
     }
 }
-
-// Export a default object to allow default import
 export default {
     getTables,
     createTable,

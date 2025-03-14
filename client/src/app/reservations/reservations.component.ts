@@ -33,6 +33,7 @@ export class ReservationsComponent implements OnInit {
     this.currentUser = this.authService.getCurrentUser();
     this.isAdmin = this.currentUser?.is_admin || false;
 
+    // Charge les réservations et applique un filtre selon le rôle de l'utilisateur
     this.reservationService.reservations$.subscribe(reservations => {
       if (this.isAdmin) {
         this.reservations = reservations;
@@ -45,6 +46,7 @@ export class ReservationsComponent implements OnInit {
     this.reservationService.fetchReservations().subscribe();
   }
 
+  // Formate la date pour affichage
   formatDate(datetime: string): string {
     const date = new Date(datetime);
     return date.toLocaleDateString('fr-FR', {
@@ -55,6 +57,7 @@ export class ReservationsComponent implements OnInit {
     });
   }
 
+  // Détermine le créneau horaire à partir de l'heure
   getTimeSlot(datetime: string): string {
     const time = datetime.substring(11, 16);
 
@@ -65,20 +68,24 @@ export class ReservationsComponent implements OnInit {
     return 'Créneau inconnu';
   }
 
+  // Déclenche le filtrage des réservations selon la recherche
   triggerSearch(): void {
     this.filteredReservations = this.filterReservations();
   }
 
+  // Ouvre le formulaire de réservation en mode création ou édition
   openReservationForm(reservation?: any): void {
     this.router.navigate(['/reservations/form'], { state: { reservation } });
   }
 
+  // Supprime une réservation après confirmation
   deleteReservation(id: number): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) {
       this.reservationService.deleteReservation(id).subscribe();
     }
   }
 
+  // Filtre les réservations selon la requête de recherche
   filterReservations(): any[] {
     return this.reservations.filter(reservation =>
       reservation.client_name?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||

@@ -11,10 +11,11 @@ export interface Table {
   providedIn: 'root'
 })
 export class TableService {
-  private apiUrl = '/api/tables'; // Use relative path for proxy
+  private apiUrl = '/api/tables'; // URL relative vers l'API des tables
 
   constructor(private http: HttpClient) {}
 
+  // Récupère les en-têtes HTTP avec le token d'authentification
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
     return new HttpHeaders({
@@ -23,6 +24,7 @@ export class TableService {
     });
   }
 
+  // Récupère la liste des tables
   getTables(): Observable<Table[]> {
     return this.http.get<Table[]>(this.apiUrl, {
       headers: this.getHeaders(),
@@ -30,6 +32,7 @@ export class TableService {
     });
   }
 
+  // Crée une nouvelle table
   createTable(table: { seats: number }): Observable<Table> {
     return this.http.post<Table>(this.apiUrl, table, {
       headers: this.getHeaders(),
@@ -37,6 +40,7 @@ export class TableService {
     });
   }
 
+  // Met à jour une table existante
   updateTable(id: number, updatedData: Partial<Table>): Observable<Table> {
     return this.http.put<Table>(`${this.apiUrl}/${id}`, updatedData, {
       headers: this.getHeaders(),
@@ -44,6 +48,7 @@ export class TableService {
     });
   }
 
+  // Supprime une table existante
   deleteTable(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`, {
       headers: this.getHeaders(),

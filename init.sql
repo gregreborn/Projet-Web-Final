@@ -39,12 +39,12 @@ CREATE TABLE IF NOT EXISTS reservations (
 
 -- Insertion d'un administrateur par défaut
 INSERT INTO clients (name, email, password, is_admin) VALUES
-    ('Admin User', 'admin@example.com', '$2b$10$k9MXLz7z9fhB1oO6Xz4w0ewfG2/3YqW3G2/B0Y2Xbc3F5oFSshJoC', TRUE)
+    ('Admin User', 'admin@example.com', '$2b$10$zV5njIM/KFs3XxJCvFPQL.5E53oz/l3vl1OUxLUNq5ip3qHkvx.K.', TRUE)
 ON CONFLICT (email) DO NOTHING;
 
 -- Insertion d'un utilisateur normal
 INSERT INTO clients (name, email, password, is_admin) VALUES
-    ('Regular User', 'user@example.com', '$2b$10$Jw8r.P7V3H/7h89bfGh8fOTt1B9/Ou1Zn9W9rFSP1Me5R3Y0YT5Gm', FALSE)
+    ('Regular User', 'user@example.com', '$2b$10$bRKxLpXNzhUeY7muQti1u.huSTC/Kj/t3mHy9YvvJ5YHpRWKaq1qK', FALSE)
 ON CONFLICT (email) DO NOTHING;
 
 

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {Router, RouterLink} from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -20,26 +20,29 @@ export class RegisterComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   ngOnInit(): void {
+    // Vérification de l'état entrant
     const state = history.state;
-    console.log('Incoming State:', state);
+    console.log('État entrant :', state);
   }
 
   register(): void {
+    // Vérifie que tous les champs sont remplis
     if (!this.name || !this.email || !this.password) {
-      this.errorMessage = 'All fields are required!';
+      this.errorMessage = 'Tous les champs sont requis !';
       return;
     }
 
+    // Enregistrement via AuthService
     this.authService.register({ name: this.name, email: this.email, password: this.password }).subscribe({
       next: () => {
-        // Automatically log in after registration
+        // Connexion automatique après l'inscription réussie
         this.authService.login({ email: this.email, password: this.password }).subscribe({
           next: (response) => {
             this.authService.saveToken(response.token);
 
             const state = history.state;
 
-            // Redirect to reservation form if reservation data exists
+            // Redirection vers le formulaire de réservation si des données existent
             if (state && state.reservation) {
               this.router.navigate(['/reservations/form'], { state: { reservation: state.reservation } });
             } else {
@@ -47,16 +50,15 @@ export class RegisterComponent {
             }
           },
           error: (err) => {
-            console.error('Auto-login after registration failed:', err);
-            this.errorMessage = 'Auto-login failed. Please try logging in manually.';
+            console.error('Échec de la connexion automatique :', err);
+            this.errorMessage = 'Connexion automatique échouée. Veuillez vous connecter manuellement.';
           }
         });
       },
       error: (err) => {
-        console.error('Registration failed:', err);
-        this.errorMessage = err.error?.error || 'Something went wrong. Please try again.';
+        console.error('Échec de l’inscription :', err);
+        this.errorMessage = err.error?.error || 'Une erreur est survenue. Veuillez réessayer.';
       }
     });
   }
-
 }

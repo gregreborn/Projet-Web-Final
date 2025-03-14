@@ -10,7 +10,7 @@ import { NgClass, NgIf } from '@angular/common';
   selector: 'app-reservation-form',
   templateUrl: './reservation-form.component.html',
   styleUrls: ['./reservation-form.component.scss'],
-  standalone: true, // Mark as standalone component
+  standalone: true,
   imports: [
     ReactiveFormsModule,
     FormsModule,
@@ -35,13 +35,13 @@ export class ReservationFormComponent implements OnInit {
     protected authService: AuthService,
     private router: Router
   ) {
+    // Initialisation du formulaire avec validation
     this.reservationForm = this.fb.group({
       date: ['', Validators.required],
       timeSlot: ['', Validators.required],
-      numPeople: [1, [Validators.required, Validators.min(1), Validators.max(6)]],
+      numPeople: [1, [Validators.required, Validators.min(1), Validators.max(6)]]
     });
   }
-
 
   ngOnInit(): void {
     const state = history.state;
@@ -53,14 +53,14 @@ export class ReservationFormComponent implements OnInit {
     }
 
     if (state.reservation) {
-      // Patch form with the passed reservation state
+      // Remplit le formulaire avec les données existantes
       this.reservationForm.patchValue({
         date: state.reservation.date,
         timeSlot: state.reservation.timeSlot,
         numPeople: state.reservation.numPeople
       });
 
-      // Automatically confirm reservation if user is now logged in
+      // Confirme automatiquement la réservation si l'utilisateur est maintenant connecté
       if (currentUser?.id && !this.isEditMode) {
         const { date, timeSlot, numPeople } = state.reservation;
         const datetime = `${date}T${timeSlot}:00Z`;
@@ -74,9 +74,7 @@ export class ReservationFormComponent implements OnInit {
     }
   }
 
-
-
-  // ✅ Getters for Form Controls
+  // Getters pour faciliter l'accès aux contrôles du formulaire
   get date() {
     return this.reservationForm.get('date');
   }
@@ -89,7 +87,7 @@ export class ReservationFormComponent implements OnInit {
     return this.reservationForm.get('numPeople');
   }
 
-
+  // Soumission du formulaire de réservation
   submitReservation(): void {
     this.errorMessage = null;
     this.successMessage = null;
@@ -105,7 +103,7 @@ export class ReservationFormComponent implements OnInit {
     const clientId = this.isAdmin ? this.selectedClient?.id : this.authService.getCurrentUser()?.id;
 
     if (!clientId) {
-      // Redirect to login and pass reservation data in the state
+      // Redirige vers la connexion avec conservation des données de réservation
       this.router.navigate(['/login'], { state: { reservation: { date, timeSlot, numPeople } } });
       return;
     }
@@ -117,8 +115,7 @@ export class ReservationFormComponent implements OnInit {
     }
   }
 
-
-
+  // Création d'une nouvelle réservation
   private createReservation(clientId: number, numPeople: number, datetime: string): void {
     this.reservationService.createReservation({
       client_id: clientId,
@@ -132,13 +129,13 @@ export class ReservationFormComponent implements OnInit {
           this.router.navigate([redirectPath]);
         }, 2000);
       },
-      error: (error: { error: { message: string; }; }) => {
+      error: (error: { error: { message: string; } }) => {
         this.errorMessage = error.error.message || 'Erreur lors de la création de la réservation.';
       }
     });
   }
 
-
+  // Mise à jour d'une réservation existante
   private updateReservation(reservationId: number, numPeople: number, datetime: string): void {
     this.reservationService.updateReservation(reservationId, {
       datetime: datetime,
@@ -148,16 +145,15 @@ export class ReservationFormComponent implements OnInit {
         this.successMessage = '✅ Réservation mise à jour!';
         setTimeout(() => this.router.navigate(['/reservations']), 2000);
       },
-      error: (error: { error: { message: string; }; }) => {
+      error: (error: { error: { message: string; } }) => {
         this.errorMessage = error.error.message || 'Erreur lors de la mise à jour de la réservation.';
       }
     });
   }
 
-  // Helper method to check for control errors
+  // Vérifie les erreurs de validation sur les champs du formulaire
   hasError(controlName: string, errorName: string): boolean {
     const control = this.reservationForm.get(controlName);
     return control ? control.hasError(errorName) && (control.dirty || control.touched) : false;
   }
-
 }

@@ -13,29 +13,14 @@ interface Client {
   providedIn: 'root'
 })
 export class ClientService {
-  private apiUrl = '/api/clients'; // Use proxy path
+  private apiUrl = '/api/clients'; // URL de base de l'API des clients
 
   constructor(private http: HttpClient) {
-    console.log('✅ ClientService initialized');
+    console.log('✅ ClientService initialisé');
   }
 
-  private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('token');
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
-  }
 
-  // Create or get client for reservation
-  createOrGetClient(clientData: { name: string; email: string }): Observable<any> {
-    return this.http.post(`${this.apiUrl}/create-or-get-client`, clientData, {
-      headers: this.getHeaders(),
-      withCredentials: true
-    });
-  }
-
-  // Get all clients (admin)
+  // Récupère tous les clients (réservé aux administrateurs)
   getClients(): Observable<Client[]> {
     return this.http.get<Client[]>(this.apiUrl, {
       headers: this.getHeaders(),
@@ -43,15 +28,15 @@ export class ClientService {
     });
   }
 
-  // Get a specific client by ID
-  getClientById(clientId: number): Observable<Client> {
+  // Récupère un client spécifique par son ID
+  getClient(clientId: number): Observable<Client> {
     return this.http.get<Client>(`${this.apiUrl}/${clientId}`, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
-  // Get profile of the logged-in client
+  // Récupère le profil de l'utilisateur connecté
   getProfile(): Observable<Client> {
     return this.http.get<Client>(`${this.apiUrl}/profile`, {
       headers: this.getHeaders(),
@@ -59,15 +44,15 @@ export class ClientService {
     });
   }
 
-  // Update client profile (for both admin and client)
-  updateProfile(clientId: number, updatedData: { name?: string; email?: string; password?: string }): Observable<Client> {
+  // Met à jour le profil d'un client existant
+  updateProfile(clientId: number, updatedData: any): Observable<Client> {
     return this.http.put<Client>(`${this.apiUrl}/${clientId}`, updatedData, {
       headers: this.getHeaders(),
       withCredentials: true
     });
   }
 
-  // Change client password
+  // Change le mot de passe du client
   changePassword(oldPassword: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/change-password`, { oldPassword, newPassword }, {
       headers: this.getHeaders(),
@@ -75,15 +60,7 @@ export class ClientService {
     });
   }
 
-  // Update client (admin specific)
-  updateClient(clientId: number, updatedData: { name?: string; email?: string; password?: string; is_admin?: boolean }): Observable<Client> {
-    return this.http.put<Client>(`${this.apiUrl}/${clientId}`, updatedData, {
-      headers: this.getHeaders(),
-      withCredentials: true
-    });
-  }
-
-  // Delete a client (admin)
+  // Supprime un client (réservé aux administrateurs)
   deleteClient(clientId: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${clientId}`, {
       headers: this.getHeaders(),
@@ -91,11 +68,19 @@ export class ClientService {
     });
   }
 
-  // Create a new client (admin)
+  // Crée un nouveau client (réservé aux administrateurs)
   createClient(clientData: { name: string; email: string; password: string; is_admin?: boolean }): Observable<Client> {
     return this.http.post<Client>(this.apiUrl, clientData, {
       headers: this.getHeaders(),
       withCredentials: true
+    });
+  }
+
+  // Méthode interne pour récupérer les en-têtes HTTP nécessaires
+  private getHeaders(): HttpHeaders {
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token')}`
     });
   }
 }

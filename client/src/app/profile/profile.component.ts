@@ -37,6 +37,7 @@ export class ProfileComponent implements OnInit {
     this.loadProfile();
   }
 
+  // Charge les données du profil utilisateur depuis le serveur
   loadProfile(): void {
     this.isLoading = true;
     this.clientService.getProfile().subscribe({
@@ -55,11 +56,13 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // Vérifie si l'utilisateur utilise un mot de passe généré automatiquement
   detectAutoPassword(): void {
     const autoPassword = localStorage.getItem('autoPassword');
     this.usingAutoPassword = !!autoPassword;
   }
 
+  // Met à jour les informations du profil
   updateProfile(): void {
     if (!this.client) return;
 
@@ -95,6 +98,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // Change le mot de passe de l'utilisateur
   changePassword(): void {
     if (!this.oldPassword || !this.newPassword || !this.confirmPassword) {
       this.errorMessage = '⚠️ Veuillez remplir tous les champs.';
@@ -115,7 +119,7 @@ export class ProfileComponent implements OnInit {
       next: () => {
         alert('✅ Mot de passe changé avec succès !');
         this.usingAutoPassword = false;
-        localStorage.removeItem('autoPassword'); // Remove auto password flag
+        localStorage.removeItem('autoPassword');
         this.oldPassword = '';
         this.newPassword = '';
         this.confirmPassword = '';
@@ -126,6 +130,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
+  // Vérifie si l'email est valide
   private validateEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);

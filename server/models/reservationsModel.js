@@ -1,20 +1,20 @@
 import pool from '../db.js';
-import * as Tables from '../models/tablesModel.js'; // if needed
+import * as Tables from '../models/tablesModel.js';
 
-// Available service time slots
+// Créneaux horaires disponibles pour le service
 const serviceTimeSlots = ["11:30", "17:30", "20:00"];
 
-// ✅ Validate if the selected time is within allowed service slots
+// Vérifie si l'heure de réservation est valide
 export const validateServiceTime = (datetime) => {
     const time = datetime.split('T')[1].substring(0, 5);
     return serviceTimeSlots.includes(time);
 };
 
-// ✅ Get available table for a specific time slot
+// Récupère une table disponible pour un créneau horaire spécifique
 export const getAvailableTable = async (numPeople, datetime) => {
     const timeSlot = datetime.split('T')[1].substring(0, 5);
 
-    // Check for available table that is not booked for the same date and time slot
+    // Cherche une table disponible qui n'est pas réservée pour le même jour et créneau horaire
     const result = await pool.query(
         `SELECT t.* FROM tables t
          WHERE t.seats >= $1
@@ -30,7 +30,7 @@ export const getAvailableTable = async (numPeople, datetime) => {
     return result.rows[0];
 };
 
-// ✅ Get all reservations (Admin)
+// Récupère toutes les réservations (pour admin)
 export const getAllReservations = async () => {
     const result = await pool.query(`
         SELECT
@@ -52,7 +52,7 @@ export const getAllReservations = async () => {
     }));
 };
 
-// ✅ Get client's future reservations (from today onwards)
+// Récupère les réservations futures d'un client (à partir d'aujourd'hui)
 export const getClientReservations = async (client_id, today) => {
     const result = await pool.query(
         `SELECT
@@ -76,7 +76,7 @@ export const getClientReservations = async (client_id, today) => {
     }));
 };
 
-// ✅ Get reservation by ID
+// Récupère une réservation par son ID
 export const getReservationById = async (id) => {
     const result = await pool.query(
         'SELECT * FROM reservations WHERE id = $1',
@@ -85,15 +85,15 @@ export const getReservationById = async (id) => {
     return result.rows[0] || null;
 };
 
-// ✅ Create a reservation
+// Crée une nouvelle réservation
 export const createReservation = async (client_id, num_people, datetime) => {
     if (!validateServiceTime(datetime)) {
-        throw new Error('Invalid reservation time slot.');
+        throw new Error('Créneau horaire invalide.');
     }
 
     const table = await getAvailableTable(num_people, datetime);
     if (!table) {
-        throw new Error('No available table for this time slot.');
+        throw new Error('Aucune table disponible pour ce créneau horaire.');
     }
 
     const result = await pool.query(
@@ -105,9 +105,8 @@ export const createReservation = async (client_id, num_people, datetime) => {
     return result.rows[0];
 };
 
-// Reassign reservations for a given time slot if a more optimal table becomes available (iterative version)
+// Réaffecte automatiquement les réservations existantes pour optimiser l'utilisation des tables
 export const reassignReservationsForTimeSlot = async (datetime) => {
-    // Ensure datetime is a string (ISO)
     const datetimeStr = (datetime instanceof Date) ? datetime.toISOString() : datetime;
     let changesMade = true;
     while (changesMade) {
@@ -115,7 +114,6 @@ export const reassignReservationsForTimeSlot = async (datetime) => {
         const datePart = datetimeStr.split('T')[0];
         const timeSlot = datetimeStr.split('T')[1].substring(0, 5);
 
-        // Get all reservations for this date and time slot
         const result = await pool.query(
             `SELECT * FROM reservations
        WHERE DATE(datetime) = $1 AND TO_CHAR(datetime, 'HH24:MI') = $2
@@ -125,23 +123,19 @@ export const reassignReservationsForTimeSlot = async (datetime) => {
         const reservations = result.rows;
 
         for (const reservation of reservations) {
-            // Get the current table's seat count
             const currentTableSeatsResult = await pool.query(
                 'SELECT seats FROM tables WHERE id = $1',
                 [reservation.table_id]
             );
             const currentTableSeats = currentTableSeatsResult.rows[0]?.seats ?? 9999;
 
-            // Convert reservation.datetime to string if needed
             const reservationDateStr = reservation.datetime instanceof Date
                 ? reservation.datetime.toISOString()
                 : reservation.datetime;
 
-            // Attempt to find a smaller table
             const optimalTable = await getAvailableTable(reservation.num_people, reservationDateStr);
             if (!optimalTable) continue;
 
-            // Reassign only if new table is strictly smaller than current one
             if (optimalTable.seats < currentTableSeats) {
                 await pool.query(
                     'UPDATE reservations SET table_id = $1 WHERE id = $2',
@@ -154,18 +148,17 @@ export const reassignReservationsForTimeSlot = async (datetime) => {
     }
 };
 
-// ✅ Update a reservation
+// Met à jour une réservation existante
 export const updateReservation = async (reservationId, num_people, datetime) => {
     if (!validateServiceTime(datetime)) {
-        throw new Error('Invalid reservation time slot.');
+        throw new Error('Créneau horaire invalide.');
     }
 
     const table = await getAvailableTable(num_people, datetime);
     if (!table) {
-        throw new Error('No available table for this time slot.');
+        throw new Error('Aucune table disponible pour ce créneau horaire.');
     }
 
-    // Update the reservation with the new table assignment
     const result = await pool.query(
         `UPDATE reservations
      SET table_id = $1, num_people = $2, datetime = $3
@@ -173,18 +166,16 @@ export const updateReservation = async (reservationId, num_people, datetime) => 
         [table.id, num_people, datetime, reservationId]
     );
 
-    // Run iterative reassignments for the same time slot
     await reassignReservationsForTimeSlot(datetime);
 
     return result.rows[0];
 };
 
-// ✅ Delete a reservation
+// Supprime une réservation
 export const deleteReservation = async (reservationId) => {
     await pool.query('DELETE FROM reservations WHERE id = $1', [reservationId]);
 };
 
-// ✅ Check reservation conflict manually (optional if logic changes later)
 export const checkReservationConflict = async (table_id, datetime, reservationId = null) => {
     const query = `
     SELECT * FROM reservations

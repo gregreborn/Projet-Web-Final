@@ -2,14 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { TableService } from '../services/table.service';
 import { Router } from '@angular/router';
-import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-table-form',
   templateUrl: './table-form.component.html',
   imports: [
     ReactiveFormsModule,
-    NgIf
   ],
   styleUrls: ['./table-form.component.scss']
 })
@@ -33,6 +31,7 @@ export class TableFormComponent implements OnInit {
   ngOnInit(): void {
     const state = history.state.table;
     if (state) {
+      // Mode édition : remplit le formulaire avec les données existantes
       this.isEditMode = true;
       this.tableId = state.id;
       this.tableForm.patchValue({
@@ -41,6 +40,7 @@ export class TableFormComponent implements OnInit {
     }
   }
 
+  // Soumission du formulaire pour créer ou modifier une table
   submitTable(): void {
     this.errorMessage = null;
     this.successMessage = null;
@@ -53,6 +53,7 @@ export class TableFormComponent implements OnInit {
     const tableData = this.tableForm.value;
 
     if (this.isEditMode && this.tableId) {
+      // Mise à jour d'une table existante
       this.tableService.updateTable(this.tableId, tableData).subscribe({
         next: () => {
           this.successMessage = '✅ Table mise à jour avec succès!';
@@ -63,6 +64,7 @@ export class TableFormComponent implements OnInit {
         }
       });
     } else {
+      // Création d'une nouvelle table
       this.tableService.createTable(tableData).subscribe({
         next: () => {
           this.successMessage = '✅ Table créée avec succès!';
