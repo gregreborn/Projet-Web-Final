@@ -23,7 +23,7 @@ Ce dépôt contient le projet final réalisé dans le cadre du cours **Projet We
 1. Cloner le dépôt :
 
 ```bash
-git clone <url-du-dépôt>
+git clone (https://github.com/gregreborn/Projet-Web-Final.git)
 cd Projet-Web-Final
 ```
 
